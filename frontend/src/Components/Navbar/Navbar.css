@@ -1,0 +1,83 @@
+nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navBrand {
+    margin-right: 2em;
+}
+
+.navBrand span {
+    color: var(--main-red);
+}
+
+.leftSide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1em;
+}
+
+.rightSide {
+    margin-right: 1em;
+}
+
+.leftSide a {
+    margin-right: .5em;
+    color: white;
+    font-size: .9em;
+    text-decoration: none;
+}
+
+.mobileNav {
+    display: none;
+}
+
+.mobileMenu {
+    display: none;
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+}
+
+@media only screen and (max-width: 650px) {
+    .leftSide, .rightSide {
+        display: none;
+    }
+
+    .mobileNav {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+    }
+
+    .mobileNav button {
+        margin-right: 1em;
+    }
+
+    .mobileNav h3 {
+        margin-left: 1em;
+    }
+
+    .hamBtn {
+        background-color: transparent;
+        border: none;
+        outline: none;
+        color: white;
+        font-size: 1.2em;
+    }
+
+    .mobileMenuItem {
+        padding: .7em 0;
+    }
+
+    .mobileMenuItem:hover {
+        background-color: var(--main-red);
+        font-weight: bold;
+    }
+
+    .mobileMenu .flatBtn {
+        margin: .7em 0;
+    }
+}

@@ -1,0 +1,92 @@
+.homeHero {
+  width: 100%;
+  height: 90vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  justify-content: center;
+}
+
+.homeHero div {
+  grid-column: 1/2;
+  margin: 2em;
+  text-align: left;
+  font-size: 1.7em;
+}
+
+.homeHero div button {
+    padding: .7em 3em;
+}
+
+.homeHero img {
+  grid-column: 2/3;
+  margin: 2em;
+}
+
+.homeRedSection {
+    background-color: var(--main-red);
+    clip-path: polygon(0 10%, 100% 0, 100% 90%, 0 100%);
+    padding: 4em 1em;
+}
+
+.homeRedSection p {
+    margin: 0 1em;
+    padding-bottom: 1em;
+}
+
+.homeProsSection {
+    display: grid;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 0 5em;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 5em;
+    row-gap: 3em;
+}
+
+.homeWhyUsSection h1 {
+    margin-bottom: 1.5em;
+}
+
+.homePro {
+    text-align: left;
+}
+
+.homePro h3 {
+    margin: .5em 0 0 0;
+}
+
+.homePro img {
+    width: 35px;
+    height: 35px;
+}
+
+.homePro p {
+    font-size: .9em;
+    color: #B8B9BA;
+    margin-top: .4em;
+}
+
+.homeGreySection {
+    background-color: var(--main-grey);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    justify-content: center;
+    padding: 2em;
+    margin-top: 2em;
+}
+
+.homeGreySection div {
+    text-align: left;
+}
+
+.homeGreySection div p {
+    color: #B8B9BA;
+    margin-bottom: 3em;
+}
+
+.homeGreySection img {
+    width: 80%;
+    margin: 0 auto;
+}
