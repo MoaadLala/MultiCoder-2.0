@@ -70,12 +70,12 @@ export default function Home() {
                 </div>
             </div>
             <div className="homeGreySection">
+                <img src={homeGreySecitonImg} alt="" />
                 <div>
                     <h1>Learn, Compete, and Win Prizes!</h1>
                     <p>MultiCoder hosts competitions that are provided by you! the users, so you are more than welcome to compete in competitions, or create your own ones!</p>
                     <button className="flatBtn">Find Out More</button>
                 </div>
-                <img src={homeGreySecitonImg} alt="" />
             </div>
       </div>
   )
