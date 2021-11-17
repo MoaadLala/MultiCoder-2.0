@@ -29,7 +29,7 @@ export default function Navbar() {
                     <h3 className="navBrand">Multi<span>Coder</span></h3>
                     <Link to="/">Home</Link>
                     <Link to="/">About</Link>
-                    <Link to="/">Play</Link>
+                    <Link to="play">Play</Link>
                 </div>
                 <div className="rightSide">
                     <button class="flatBtn">Sign Up</button>
@@ -40,9 +40,13 @@ export default function Navbar() {
                 </div>
             </nav>
             <div className="mobileMenu">
-                <div className="mobileMenuItem">Home</div>
+                <Link to="/">
+                    <div className="mobileMenuItem">Home</div>
+                </Link>
                 <div className="mobileMenuItem">About</div>
-                <div className="mobileMenuItem">Play</div>
+                <Link to="play">
+                    <div className="mobileMenuItem">Play</div>
+                </Link>
                 <button class="flatBtn">Sign Up</button>
             </div>
         </>

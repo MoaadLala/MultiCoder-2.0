@@ -22,6 +22,9 @@ body {
   margin: 0 auto;
 }
 
+.greyish {
+  color: #B8B9BA;
+}
 
 
 
@@ -65,4 +68,52 @@ body {
 .flatBtn:active {
   box-shadow: none;
   transform: translateY(0);
+}
+
+
+.inputBox {
+  background-color: var(--main-black);
+  padding: .5em 1em;
+  border-radius: 2em;
+}
+
+.inputBox input {
+  font-family: 'Poppins', sans-serif;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  text-align: center;
+  font-size: 1em;
+  color: white;
+  width: 100%;
+}
+
+
+
+
+@keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.fadeOut {
+  animation: fadeout .4s;
+}
+
+@keyframes fadein {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.fadeIn {
+  animation: fadein .4s;
 }

@@ -6,6 +6,7 @@ import {
 
 import Home from './Components/Home/Home';
 import Navbar from "./Components/Navbar/Navbar";
+import Play from "./Components/Play/Play";
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-
+        <Route path="/play" element={<Play />} />
         {/* <Redirect to="/" /> */}
       </Routes>
     </Router>
