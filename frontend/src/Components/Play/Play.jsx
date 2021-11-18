@@ -3,7 +3,8 @@ import createRoom from '../../assets/createRoom.svg';
 import joinRoom from '../../assets/joinRoom.svg';
 import friendsFamily from '../../assets/friends&family.png';
 
-export default function Play() {
+export default function Play(props) {
+    const socket = props.socket;
 
     const showCreateRoom = () => {
         const joinWays = document.querySelector('.playJoinWays');
@@ -104,7 +105,7 @@ export default function Play() {
                     <div className="inputBox">
                         <input type="text" placeholder="XXXXX-XXXXX-XXXXX" />
                     </div>
-                    <button className="flatBtn">Join</button>
+                    <button className="flatBtn" onClick={() => {socket.emit('joinBtn', null)}}>Join</button>
                 </div>
             </div>
         </div>
