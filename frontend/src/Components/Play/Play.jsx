@@ -2,9 +2,19 @@ import './Play.css';
 import createRoom from '../../assets/createRoom.svg';
 import joinRoom from '../../assets/joinRoom.svg';
 import friendsFamily from '../../assets/friends&family.png';
+import { useNavigate } from 'react-router-dom';
 
 export default function Play(props) {
     const socket = props.socket;
+    const navigate = useNavigate();
+
+    const initFriendsAndFamilyGame = () => {
+        socket.emit('initFriendsAndFamilyGame', null);
+        socket.on('friendsAndFamilyGameCreated', (data) => {
+            console.log(data);
+            navigate("/game", { state: { gameCode: data } } );
+        });
+    }
 
     const showCreateRoom = () => {
         const joinWays = document.querySelector('.playJoinWays');
@@ -89,7 +99,7 @@ export default function Play(props) {
                 </div>
             </div>
             <div className="createARoom">
-                <div className="gameMode">
+                <div className="gameMode" onClick={initFriendsAndFamilyGame}>
                     <img src={friendsFamily} alt="" />
                     <div>
                         <h3>Friends & Family</h3>
@@ -105,7 +115,7 @@ export default function Play(props) {
                     <div className="inputBox">
                         <input type="text" placeholder="XXXXX-XXXXX-XXXXX" />
                     </div>
-                    <button className="flatBtn" onClick={() => {socket.emit('joinBtn', null)}}>Join</button>
+                    <button className="flatBtn">Join</button>
                 </div>
             </div>
         </div>

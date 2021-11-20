@@ -62,6 +62,7 @@
   justify-content: flex-start;
   border-radius: 4px;
   margin: 1em 0;
+  cursor: pointer;
 }
 
 .gameMode div {

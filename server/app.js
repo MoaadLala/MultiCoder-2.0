@@ -6,20 +6,36 @@ const io = require('socket.io')(http, {
     }
 });
 
+function randomRoomCode() {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < 6; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
 
 
 app.get('/', (req, res) => {
     res.send('Test');
 });
 
+let rooms = {};
+
 io.on('connection', (socket) => {
-    console.log('New User Is Here');
-    socket.emit('connection', null);
+    console.log(`New User Is Here, id = ${socket.id}`);
     socket.on('disconnect', () => {
         console.log('User Disconnected');
     });
-    socket.on('joinBtn', () => {
-        console.log('User Just Tried to Join');
+
+    socket.on('initFriendsAndFamilyGame', () => {
+        let roomCode = randomRoomCode();
+        console.log(`${socket.id} is joining a room, the room code is ${roomCode}`);
+        socket.join(roomCode);
+        rooms[roomCode] = [socket.id];
+        socket.emit('friendsAndFamilyGameCreated', roomCode);
     });
 });
 
