@@ -1,0 +1,14 @@
+.buttoned {
+    display: flex;
+    margin: 1em;
+}
+
+.buttoned .flatBtn {
+    font-size: 18px;
+    padding: 4px 24px;
+    border-radius: 50px;
+}
+
+.buttoned input {
+    text-align: left;
+}

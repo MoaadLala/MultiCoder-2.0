@@ -32,10 +32,25 @@ io.on('connection', (socket) => {
 
     socket.on('initFriendsAndFamilyGame', () => {
         let roomCode = randomRoomCode();
-        console.log(`${socket.id} is joining a room, the room code is ${roomCode}`);
+        console.log(`${socket.id} has created a room, the room code is ${roomCode}`);
         socket.join(roomCode);
         rooms[roomCode] = [socket.id];
         socket.emit('friendsAndFamilyGameCreated', roomCode);
+    });
+
+    socket.on('joinARoom', (data) => {
+        if (data in rooms) {
+            socket.join(data);
+            console.log(`${socket.id} joined a room, the room code is ${data}`);
+            console.log(`room object: ${rooms.toString()}`);
+            socket.emit('joinARoom', true);
+        } else {
+            socket.emit('joinARoom', false);
+        }
+    })
+
+    socket.on('globalMessage', (data) => {
+        io.in(data[0]).emit('globalMessage', data[1]);
     });
 });
 

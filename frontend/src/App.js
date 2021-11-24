@@ -18,7 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/play" element={<Play socket={socket}/>} />
-        <Route path="/game" element={<Game />} />
+        <Route path="/game" element={<Game socket={socket}/>} />
         {/* <Redirect to="/" /> */}
       </Routes>
     </Router>

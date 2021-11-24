@@ -5,10 +5,26 @@ import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/theme-twilight";
+import ButtonedInputBox from '../ButtonedInputBox/ButtonedInputBox';
+import profilePic from '../../assets/profilePic.jpeg';
 
-export default function Game() {
+export default function Game(props) {
+    const socket = props.socket;
     const { state } = useLocation();
     const [activeTab, setActiveTab] = useState('question');
+    const [messages, setMessages] = useState([]);
+
+    useEffect(() => {
+        //When Receving a message, this is not ready yet, as we have to add the image and name later
+        socket.on('globalMessage', (data) => {
+            setMessages(messages => [...messages, {name: 'John Daw', image: profilePic, message: data}]);
+        });
+        return () => {
+            socket.off('globalMessage');
+        }
+    }, []);
+
     const updateTabState = (newTab) => {
         document.querySelector('.tabBarItem-active').classList.remove('tabBarItem-active');
         document.getElementById(`${newTab}Tab`).classList.add('tabBarItem-active');
@@ -31,20 +47,60 @@ export default function Game() {
                         <div className="tabBarItem" id="chatTab" onClick={() => updateTabState('chat')}>Chat</div>
                     </div>
                     <div className="tabBarView" id="question" style={{display: (activeTab === 'question') ? 'block' : 'none'}}>
-                        <h2>Question</h2>
+                        <div className="questionHeading">
+                            <h2 className="title">Sorting</h2>
+                            <p className="author">By: Moaad Lala</p>
+                        </div>
+                        <div className="questionDescription">
+                            Given an array of integers, sort them in an assending order
+                            <div className="codeBlock">
+                                <p>Input: [1, 32, 12, 34, 231, 42]</p>
+                                <p>output: [1, 12, 32, 34, 42, 231]</p>
+                            </div>
+                        </div>
                     </div>
                     <div className="tabBarView" id="console" style={{display: (activeTab === 'console') ? 'block' : 'none'}}>
                         <h2>Console</h2>
                     </div>
-                    <div className="tabBarView" id="chat" style={{display: (activeTab === 'chat') ? 'block' : 'none'}}>
-                        <h2>Chat</h2>
+                    <div className="tabBarView" id="chat" style={{display: (activeTab === 'chat') ? 'flex' : 'none'}}>
+                        <div className="chatContainer">
+                            <div className="messagesContainer">
+                                {/* <div className="messageContainer">
+                                    <img src={profilePic} alt="" />
+                                    <div>
+                                        <h5 className="greyish">John Doe</h5>
+                                        <p>i just won didn’t i, you will never stand chance infront the king of algorithms</p>
+                                    </div>
+                                </div>
+                                <div className="messageContainer">
+                                    <img src={profilePic} alt="" />
+                                    <div>
+                                        <h5 className="greyish">John Doe</h5>
+                                        <p>i just won didn’t i, you will never stand chance infront the king of algorithms</p>
+                                    </div>
+                                </div> */}
+                                {
+                                    messages.map(val => (
+                                        <div className="messageContainer">
+                                            <img src={val.image} alt="" />
+                                            <div>
+                                                <h5 className="greyish">{val.name}</h5>
+                                                <p>{val.message}</p>
+                                            </div>
+                                        </div>
+                                    ))
+                                }
+
+                            </div>
+                            <ButtonedInputBox inputId="messageInput" bgColor="var(--main-grey)" placeholder="Put Your Message Here..." btnValue={<i class="fas fa-paper-plane"></i>} btnFunction='sendMessage' socket={socket} gameCode={state.gameCode}/>
+                        </div>
                     </div>
                 </div>
                 <div className="gameRightSide">
                 <AceEditor
                     mode="javascript"
                     theme="monokai"
-                    name="UNIQUE_ID_OF_DIV"
+                    name="editor"
                     editorProps={{ $blockScrolling: true }}
                     focus={true}
                     enableBasicAutocompletion={true}

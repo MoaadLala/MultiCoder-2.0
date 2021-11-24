@@ -84,6 +84,7 @@ body {
   outline: none;
   text-align: center;
   font-size: 1em;
+  font-weight: bold;
   color: white;
   width: 100%;
 }

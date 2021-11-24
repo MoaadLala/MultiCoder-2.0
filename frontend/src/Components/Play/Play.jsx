@@ -3,10 +3,12 @@ import createRoom from '../../assets/createRoom.svg';
 import joinRoom from '../../assets/joinRoom.svg';
 import friendsFamily from '../../assets/friends&family.png';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function Play(props) {
     const socket = props.socket;
     const navigate = useNavigate();
+    const [joinCode, setJoinCode] = useState('');
 
     const initFriendsAndFamilyGame = () => {
         socket.emit('initFriendsAndFamilyGame', null);
@@ -76,6 +78,17 @@ export default function Play(props) {
         }, 400);
     }
 
+    const joinARoom = () => {
+        socket.emit('joinARoom', joinCode);
+        socket.on('joinARoom', (data) => {
+            if (data) {
+                navigate("/game", { state: { gameCode: joinCode } } );
+            } else {
+                console.log('Error joining: No room with this code exists');
+            }
+        })
+    }
+
     return (
         <div className="play">
             <h1>Welcome to the Arena</h1>
@@ -113,9 +126,9 @@ export default function Play(props) {
                     <button className="closeJoinARoom" onClick={hideJoinARoom}><i class="fas fa-times"></i></button>
                     <h3>Enter the room's code:</h3>
                     <div className="inputBox">
-                        <input type="text" placeholder="XXXXX-XXXXX-XXXXX" />
+                        <input type="text" placeholder="XXXXX-XXXXX-XXXXX" onChange={(e) => setJoinCode(e.target.value)}/>
                     </div>
-                    <button className="flatBtn">Join</button>
+                    <button className="flatBtn" onClick={joinARoom}>Join</button>
                 </div>
             </div>
         </div>
