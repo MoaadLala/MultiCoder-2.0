@@ -1,9 +1,11 @@
 import './ButtonedInputBox.css';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { User } from '../../App';
 
 export default function ButtonedInputBox(props) {
     const socket = props.socket;
     const [userMessage, setUserMessage] = useState('');
+    const { user } = useContext(User);
 
 
     
@@ -15,7 +17,7 @@ export default function ButtonedInputBox(props) {
     
     const sendMessage = () => {
         if (userMessage !== '') {
-            socket.emit('globalMessage', [props.gameCode, userMessage]);
+            socket.emit('globalMessage', [props.gameCode, user.name, user.photo, userMessage]);
             const messageInput = document.getElementById(props.inputId);
             messageInput.value = '';
             messageInput.focus = true;

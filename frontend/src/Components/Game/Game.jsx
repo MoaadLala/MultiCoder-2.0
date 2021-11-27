@@ -1,6 +1,6 @@
 import './Game.css';
 import { useLocation } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-javascript";
@@ -8,17 +8,22 @@ import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-twilight";
 import ButtonedInputBox from '../ButtonedInputBox/ButtonedInputBox';
 import profilePic from '../../assets/profilePic.jpeg';
+import { User } from '../../App';
+
 
 export default function Game(props) {
     const socket = props.socket;
     const { state } = useLocation();
     const [activeTab, setActiveTab] = useState('question');
     const [messages, setMessages] = useState([]);
+    const {user, setUser} = useContext(User);
+
+    console.log(user);
 
     useEffect(() => {
         //When Receving a message, this is not ready yet, as we have to add the image and name later
         socket.on('globalMessage', (data) => {
-            setMessages(messages => [...messages, {name: 'John Daw', image: profilePic, message: data}]);
+            setMessages(messages => [...messages, data]);
         });
         return () => {
             socket.off('globalMessage');
@@ -65,20 +70,6 @@ export default function Game(props) {
                     <div className="tabBarView" id="chat" style={{display: (activeTab === 'chat') ? 'flex' : 'none'}}>
                         <div className="chatContainer">
                             <div className="messagesContainer">
-                                {/* <div className="messageContainer">
-                                    <img src={profilePic} alt="" />
-                                    <div>
-                                        <h5 className="greyish">John Doe</h5>
-                                        <p>i just won didn’t i, you will never stand chance infront the king of algorithms</p>
-                                    </div>
-                                </div>
-                                <div className="messageContainer">
-                                    <img src={profilePic} alt="" />
-                                    <div>
-                                        <h5 className="greyish">John Doe</h5>
-                                        <p>i just won didn’t i, you will never stand chance infront the king of algorithms</p>
-                                    </div>
-                                </div> */}
                                 {
                                     messages.map(val => (
                                         <div className="messageContainer">

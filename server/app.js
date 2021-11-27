@@ -2,7 +2,7 @@ const app = require('express')();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
     cors: {
-        origin: 'http://localhost:3000',
+        origin: 'http://127.0.0.1:3000',
     }
 });
 
@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('globalMessage', (data) => {
-        io.in(data[0]).emit('globalMessage', data[1]);
+        io.in(data[0]).emit('globalMessage', {name: data[1], image: data[2], message: data[3]});
     });
 });
 

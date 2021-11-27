@@ -1,9 +1,13 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { User } from '../../App';
 
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigate = useNavigate();
+    const { user } = useContext(User);
+    console.log(user);
 
     const changeMenuState = () => {
         const hamBtn = document.querySelector('.hamBtn');
@@ -32,7 +36,11 @@ export default function Navbar() {
                     <Link to="play">Play</Link>
                 </div>
                 <div className="rightSide">
-                    <button class="flatBtn">Sign Up</button>
+                    {(user.photo) ? (
+                        <img className="navProfileImg" src={user.photo} alt=""/>
+                        ) : (
+                        <button class="flatBtn" onClick={() => navigate("login")}>Login</button>
+                    )}
                 </div>
                 <div className="mobileNav">
                     <h3 className="navBrand">Multi<span>Coder</span></h3>
@@ -47,7 +55,7 @@ export default function Navbar() {
                 <Link to="play">
                     <div className="mobileMenuItem">Play</div>
                 </Link>
-                <button class="flatBtn">Sign Up</button>
+                <button class="flatBtn" onClick={() => navigate("login")}>Login</button>
             </div>
         </>
     )
