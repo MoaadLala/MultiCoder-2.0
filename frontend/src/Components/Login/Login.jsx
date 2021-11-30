@@ -2,9 +2,11 @@ import './Login.css';
 import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, GithubAuthProvider } from 'firebase/auth';
 import { useContext } from 'react';
 import { User } from '../../App';
+import { Socket } from 'socket.io-client';
 
-export default function Login() {
+export default function Login(props) {
     const {user, setUser} = useContext(User);
+    const socket = props.socket;
     
     const googleAuth = () => {
         const provider = new GoogleAuthProvider();
@@ -14,10 +16,12 @@ export default function Login() {
             const token = credential.accessToken;
             const user = result.user;
             console.log(user);
+            socket.emit('login', {name: user.displayName, email: user.email, photo: user.photoURL});
             setUser({
                 name: user.displayName,
                 email: user.email,
                 photo: user.photoURL,
+                admin: false,
             });
             console.log(token);
         }).catch((error) => {
@@ -32,11 +36,13 @@ export default function Login() {
             const user = result.user;
             const credential = FacebookAuthProvider.credentialFromResult(result);
             const accessToken = credential.accessToken;
-
+            socket.emit('login', {name: user.displayName, email: user.email, photo: user.photoURL});
+            
             setUser({
                 name: user.displayName,
                 email: user.email,
                 photo: user.photoURL,
+                admin: false,
             });
             console.log(accessToken);
         })
@@ -49,11 +55,13 @@ export default function Login() {
             const user = result.user;
             const credential = GithubAuthProvider.credentialFromResult(result);
             const token = credential.accessToken;
+            socket.emit('login', {name: user.displayName, email: user.email, photo: user.photoURL});
 
             setUser({
                 name: user.displayName,
                 email: user.email,
                 photo: user.photoURL,
+                admin: false,
             });
             console.log(token);
         })

@@ -3,17 +3,27 @@ import createRoom from '../../assets/createRoom.svg';
 import joinRoom from '../../assets/joinRoom.svg';
 import friendsFamily from '../../assets/friends&family.png';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { User } from '../../App';
 
 export default function Play(props) {
+    const {user, setUser} = useContext(User);
     const socket = props.socket;
     const navigate = useNavigate();
     const [joinCode, setJoinCode] = useState('');
 
+
+    console.log(user);
     const initFriendsAndFamilyGame = () => {
         socket.emit('initFriendsAndFamilyGame', null);
         socket.on('friendsAndFamilyGameCreated', (data) => {
-            navigate("/lobby", { state: { gameCode: data } } );
+            setUser({
+                name: user.name,
+                email: user.email,
+                photo: user.photo,
+                admin: true,
+            });
+            navigate("/lobby", { state: { gameCode: data[0], playersObj: JSON.parse(data[1]) } } );
         });
     }
 
@@ -80,9 +90,10 @@ export default function Play(props) {
     const joinARoom = () => {
         socket.emit('joinARoom', joinCode);
         socket.on('joinARoom', (data) => {
-            if (data) {
-                navigate("/game", { state: { gameCode: joinCode } } );
+            if (data[0]) {
+                navigate("/lobby", { state: { gameCode: joinCode, playersObj: JSON.parse(data[1]) } } );
             } else {
+                // Write an error handler
                 console.log('Error joining: No room with this code exists');
             }
         })

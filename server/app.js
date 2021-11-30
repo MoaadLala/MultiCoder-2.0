@@ -43,24 +43,39 @@ io.on('connection', (socket) => {
         console.log('User Disconnected');
     });
 
+    socket.on('login', (data) => {
+        socket.name = data.name;
+        socket.photo = data.photo;
+    });
+
     socket.on('initFriendsAndFamilyGame', async() => {
-        const questions = await db.collection('questions').get();
         let roomCode = randomRoomCode();
         console.log(`${socket.id} has created a room, the room code is ${roomCode}`);
         socket.join(roomCode);
-        rooms[roomCode] = [socket.id];
-        socket.emit('friendsAndFamilyGameCreated', roomCode)
+        rooms[roomCode] = {
+            [socket.id]: {
+                name: socket.name,
+                photo: socket.photo,
+                admin: true,
+            }
+        };
+        socket.emit('friendsAndFamilyGameCreated', [roomCode, JSON.stringify(rooms[roomCode])]);
+        console.log(`rooms object: ${JSON.stringify(rooms)}`);
     });
 
     socket.on('joinARoom', (data) => {
         if (data in rooms) {
             socket.join(data);
-            rooms[data] = [...rooms[data], socket.id];
+            rooms[data] = {...rooms[data], [socket.id]: {
+                name: socket.name,
+                photo: socket.photo,
+                admin: false,
+            }};
             console.log(`${socket.id} joined a room, the room code is ${data}`);
             console.log(`room object: ${JSON.stringify(rooms)}`);
-            socket.emit('joinARoom', true);
+            io.in(data).emit('joinARoom', [true, JSON.stringify(rooms[data])]);
         } else {
-            socket.emit('joinARoom', false);
+            socket.emit('joinARoom', [false, {}]);
         }
     })
 
