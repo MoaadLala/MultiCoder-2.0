@@ -29,12 +29,11 @@ body {
 
 
 /* flatBtn */
-.flatBtn {
+.flatBtn, .flatBtn--clicked {
   appearance: none;
   border: none;
   border-radius: 10px;
   box-sizing: border-box;
-  background-color: var(--main-red);
   color: white;
   cursor: pointer;
   display: inline-block;
@@ -54,7 +53,11 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
-.flatBtn:disabled {
+.flatBtn {
+  background-color: var(--main-red);
+}
+
+.flatBtn:disabled, .flatBtn--clicked:disabled {
   pointer-events: none;
 }
 
@@ -65,11 +68,21 @@ body {
   transform: translateY(-2px);
 }
 
-.flatBtn:active {
+.flatBtn:active, .flatBtn--clicked:active {
   box-shadow: none;
   transform: translateY(0);
 }
 
+.flatBtn--clicked {
+  background-color: var(--main-grey);
+}
+
+.flatBtn--clicked:hover {
+  color: #fff;
+  background-color: var(--main-grey);
+  box-shadow: rgba(177, 30, 30,.35) 0 -25px 18px -14px inset,rgba(177, 30, 30,.25) 0 1px 2px,rgba(177, 30, 30,.25) 0 2px 4px,rgba(177, 30, 30,.25) 0 4px 8px,rgba(177, 30, 30,.25) 0 8px 16px,rgba(177, 30, 30,.25) 0 16px 32px;
+  transform: translateY(-2px);
+}
 
 .inputBox {
   background-color: var(--main-black);

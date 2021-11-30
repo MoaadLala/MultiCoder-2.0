@@ -7,7 +7,6 @@ import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-twilight";
 import ButtonedInputBox from '../ButtonedInputBox/ButtonedInputBox';
-import profilePic from '../../assets/profilePic.jpeg';
 import { User } from '../../App';
 
 
@@ -16,12 +15,23 @@ export default function Game(props) {
     const { state } = useLocation();
     const [activeTab, setActiveTab] = useState('question');
     const [messages, setMessages] = useState([]);
-    const {user, setUser} = useContext(User);
+    const [question, setQuestion] = useState({});
+    const { user } = useContext(User);
 
     console.log(user);
 
     useEffect(() => {
-        //When Receving a message, this is not ready yet, as we have to add the image and name later
+        state.question = JSON.parse(state.question);
+        setQuestion({
+            title: state.question['_fieldsProto']['title']['stringValue'],
+            madeBy: state.question['_fieldsProto']['madeBy']['stringValue'],
+            description: state.question['_fieldsProto']['description']['stringValue'],
+            testCases: state.question['_fieldsProto']['testCases']['arrayValue'],
+            examples: state.question['_fieldsProto']['examples']['arrayValue']['values'],
+            accountLink: state.question['_fieldsProto']['accountLink']['stringValue'],
+        });
+
+        
         socket.on('globalMessage', (data) => {
             setMessages(messages => [...messages, data]);
         });
@@ -29,6 +39,7 @@ export default function Game(props) {
             socket.off('globalMessage');
         }
     }, []);
+    console.log(question);
 
     const updateTabState = (newTab) => {
         document.querySelector('.tabBarItem-active').classList.remove('tabBarItem-active');
@@ -36,13 +47,14 @@ export default function Game(props) {
         setActiveTab(newTab);
     }
 
+    const changeHandler = event => {
+        console.log(event);
+    }
+
     return (
         <div className="game">
             <div className="gameTopSection">
                 <div className="roomCodeContainer"><b>Room Code:</b> {state.gameCode}</div>
-                <div className="gameActionBtns">
-                    <button className="flatBtn">Btn</button>
-                </div>
             </div>
             <div className="gameBoard">
                 <div className="gameLeftSide">
@@ -53,15 +65,25 @@ export default function Game(props) {
                     </div>
                     <div className="tabBarView" id="question" style={{display: (activeTab === 'question') ? 'block' : 'none'}}>
                         <div className="questionHeading">
-                            <h2 className="title">Sorting</h2>
-                            <p className="author">By: Moaad Lala</p>
+                            <h2 className="title">{question.title}</h2>
+                            <p className="author"><a href={question.accountLink} target="_blank">By: {question.madeBy}</a></p>
                         </div>
                         <div className="questionDescription">
-                            Given an array of integers, sort them in an assending order
-                            <div className="codeBlock">
+                            {question.description}
+                            {/* <div className="codeBlock">
                                 <p>Input: [1, 32, 12, 34, 231, 42]</p>
                                 <p>output: [1, 12, 32, 34, 42, 231]</p>
-                            </div>
+                            </div> */}
+                            {
+                                ('examples' in question) ? (
+                                    question.examples.map(val => (
+                                        <div className="codeBlock">
+                                            <p>Input: {val.mapValue.fields.input.stringValue}</p>
+                                            <p>Input: {val.mapValue.fields.output.stringValue}</p>
+                                        </div>
+                                    ))
+                                ) : null
+                            }
                         </div>
                     </div>
                     <div className="tabBarView" id="console" style={{display: (activeTab === 'console') ? 'block' : 'none'}}>
@@ -99,7 +121,14 @@ export default function Game(props) {
                     enableSnippets={true}
                     width="100%"
                     fontSize={16}
+                    onChange={changeHandler}
                 />
+                </div>
+            </div>
+            <div className="gameBottomSection">
+                <div className="gameActionsBtns">
+                    <button className="flatBtn--clicked">Btn</button>
+                    <button className="flatBtn">Btn</button>
                 </div>
             </div>
         </div>

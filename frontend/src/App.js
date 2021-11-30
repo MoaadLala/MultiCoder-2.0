@@ -9,6 +9,7 @@ import Game from "./Components/Game/Game";
 import Home from './Components/Home/Home';
 import Navbar from "./Components/Navbar/Navbar";
 import Play from "./Components/Play/Play";
+import Lobby from "./Components/Lobby/Lobby";
 
 import { createContext, useMemo, useState } from "react";
 import { initializeApp } from 'firebase/app';
@@ -42,6 +43,7 @@ function App() {
           <Route path="/play" element={<Play socket={socket}/>} />
           <Route path="/game" element={<Game socket={socket}/>} />
           <Route path="/login" element={<Login />} />
+          <Route path="/lobby" element={<Lobby />} />
           {/* <Redirect to="/" /> */}
         </Routes>
       </Router>

@@ -13,8 +13,7 @@ export default function Play(props) {
     const initFriendsAndFamilyGame = () => {
         socket.emit('initFriendsAndFamilyGame', null);
         socket.on('friendsAndFamilyGameCreated', (data) => {
-            console.log(data);
-            navigate("/game", { state: { gameCode: data } } );
+            navigate("/lobby", { state: { gameCode: data } } );
         });
     }
 

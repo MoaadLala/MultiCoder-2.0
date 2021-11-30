@@ -2,7 +2,7 @@ const app = require('express')();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
     cors: {
-        origin: 'http://127.0.0.1:3000',
+        origin: 'https://localhost:3000',
     }
 });
 
@@ -17,6 +17,19 @@ function randomRoomCode() {
 }
 
 
+const fs = require('firebase-admin');
+const serviceAccount = require('./multicoder-900aa-firebase-adminsdk-9ihxu-a75886fcc6.json');
+
+fs.initializeApp({
+    credential: fs.credential.cert(serviceAccount),
+});
+
+const db = fs.firestore();
+
+function randomQuestionIndex(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
+}
+
 
 app.get('/', (req, res) => {
     res.send('Test');
@@ -30,19 +43,21 @@ io.on('connection', (socket) => {
         console.log('User Disconnected');
     });
 
-    socket.on('initFriendsAndFamilyGame', () => {
+    socket.on('initFriendsAndFamilyGame', async() => {
+        const questions = await db.collection('questions').get();
         let roomCode = randomRoomCode();
         console.log(`${socket.id} has created a room, the room code is ${roomCode}`);
         socket.join(roomCode);
         rooms[roomCode] = [socket.id];
-        socket.emit('friendsAndFamilyGameCreated', roomCode);
+        socket.emit('friendsAndFamilyGameCreated', roomCode)
     });
 
     socket.on('joinARoom', (data) => {
         if (data in rooms) {
             socket.join(data);
+            rooms[data] = [...rooms[data], socket.id];
             console.log(`${socket.id} joined a room, the room code is ${data}`);
-            console.log(`room object: ${rooms.toString()}`);
+            console.log(`room object: ${JSON.stringify(rooms)}`);
             socket.emit('joinARoom', true);
         } else {
             socket.emit('joinARoom', false);
