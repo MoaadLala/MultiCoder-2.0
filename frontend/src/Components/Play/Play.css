@@ -119,6 +119,19 @@
   color: rgba(255, 255, 255, 0.5)
 }
 
+.warning {
+  background-color: var(--main-red);
+  width: 280px;
+  padding: 1em;
+  border-radius: 4px;
+  margin: 2em auto;
+  display: none;
+}
+
+.warning p {
+  margin: 0;
+}
+
 @media only screen and (max-width: 450px) {
   .gameMode {
     flex-direction: column;

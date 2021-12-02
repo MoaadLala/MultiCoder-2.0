@@ -1,22 +1,54 @@
 .lobbyPlayersContainer {
     width: 400px;
-    margin: 0 auto;
+    margin: 1em auto;
+}
+
+.lobbyHeader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .lobbyPlayer {
     display: flex;
-    align-items: flex-end;
-    justify-content: flex-start;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
     border-bottom: 2px solid rgba(0,0,0,0.3);
-    padding: .4em;
+    padding: .6em;
 }
 
-.lobbyPlayer img {
+.lobbyPlayer:last-child {
+    border: none;
+}
+
+.lobbyPlayerDescription {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.lobbyPlayerDescription img {
     width: 50px;
     height: 50px;
     border-radius: 5px;
     margin-right: .5em;
+}
+
+.kickBtn {
+    color: white;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    font-size: 2em;
+    cursor: pointer;
+}
+
+.liveIndicator {
+    color: #8a0000;
+    animation: flashy 1s infinite alternate-reverse;
+    font-size: .8em;
+    margin-left: .4em;
 }
 
 
@@ -27,5 +59,15 @@
 
     .lobbyPlayer {
         border: none;
+    }
+}
+
+@keyframes flashy {
+    0% {
+        color: #8a0000;
+    }
+
+    100% {
+        color: #ed0202;
     }
 }

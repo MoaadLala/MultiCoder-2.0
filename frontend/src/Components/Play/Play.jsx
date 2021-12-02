@@ -2,8 +2,8 @@ import './Play.css';
 import createRoom from '../../assets/createRoom.svg';
 import joinRoom from '../../assets/joinRoom.svg';
 import friendsFamily from '../../assets/friends&family.png';
-import { useNavigate } from 'react-router-dom';
-import { useContext, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useContext, useState, useEffect } from 'react';
 import { User } from '../../App';
 
 export default function Play(props) {
@@ -11,7 +11,7 @@ export default function Play(props) {
     const socket = props.socket;
     const navigate = useNavigate();
     const [joinCode, setJoinCode] = useState('');
-
+    const { state } = useLocation();
 
     console.log(user);
     const initFriendsAndFamilyGame = () => {
@@ -99,10 +99,37 @@ export default function Play(props) {
         })
     }
 
+    const showWarning = (msg) => {
+        const warningContainer = document.getElementById('playWarning');
+        warningContainer.innerText = msg;
+        warningContainer.classList.add('fadeIn');
+        warningContainer.style.display = 'block';
+        setTimeout(() => {
+            warningContainer.classList.remove('fadeIn');
+            setTimeout(() => {
+                warningContainer.classList.add('fadeOut');
+                setTimeout(() => {
+                    warningContainer.style.display = 'none';
+                    warningContainer.classList.remove('fadeOut');
+                    warningContainer.innerHTML = '';
+                }, 400);
+            }, 5000);
+        }, 400);
+    }
+
+    useEffect(() => {
+        if (state) {
+            if (state.kicked) {
+                showWarning("Sorry, but the room's leader kicked you out...");
+            }
+        }
+    }, [])
+
     return (
         <div className="play">
             <h1>Welcome to the Arena</h1>
             <p className="greyish">Choose your way of joining</p>
+            <div className="warning" id="playWarning"></div>
             <div className="playJoinWays">
                 <div className="joinWay" onClick={showCreateRoom}>
                     <img src={createRoom} alt="" />
