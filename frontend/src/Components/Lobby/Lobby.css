@@ -46,9 +46,17 @@
 
 .liveIndicator {
     color: #8a0000;
-    animation: flashy 1s infinite alternate-reverse;
+    animation: liveFlash 1s infinite alternate-reverse;
     font-size: .8em;
     margin-left: .4em;
+}
+
+.winnerTimeScore {
+    font-weight: bold;
+}
+
+.lobbyPlayersContainer .gameNotificationSection {
+    margin-top: 2em;
 }
 
 
@@ -62,7 +70,7 @@
     }
 }
 
-@keyframes flashy {
+@keyframes liveFlash {
     0% {
         color: #8a0000;
     }

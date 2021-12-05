@@ -58,6 +58,7 @@ io.on('connection', (socket) => {
                     name: socket.name,
                     photo: socket.photo,
                     admin: true,
+                    timeScore: 0,
                 },
             },
             spectators: {},
@@ -78,11 +79,6 @@ io.on('connection', (socket) => {
         //data: roomCode
         if (data in rooms) {
             socket.join(data);
-            // rooms[data] = {...rooms[data], [socket.id]: {
-            //     name: socket.name,
-            //     photo: socket.photo,
-            //     admin: false,
-            // }};
             if (rooms[data].closed) {
                 rooms[data]['spectators'] = {
                     ...rooms[data]['spectators'],
@@ -99,6 +95,7 @@ io.on('connection', (socket) => {
                         name: socket.name,
                         photo: socket.photo,
                         admin: false,
+                        timeScore: 0,
                     }
                 }
             }
@@ -133,9 +130,23 @@ io.on('connection', (socket) => {
     socket.on('startFriendsAndFamily', async(data) => {
         //data: roomCode
         const questions = await db.collection('questions').get();
-        io.to(data).emit('startFriendsAndFamily', JSON.stringify(questions.docs[randomQuestionIndex(0, questions.size)]));
+        io.to(data).emit('startFriendsAndFamily', JSON.stringify(questions.docs[randomQuestionIndex(0, questions.size)].data()));
         rooms[data].closed = true;
     });
+
+    socket.on('friendsAndFamilyWinner', (data) => {
+        //data[0]: timer
+        //data[1]: gameCode
+        rooms[data[1]]['players'][socket.id].timeScore = data[0];
+        socket.to(data[1]).emit('friendsAndFamilyWinnerNotify', [rooms[data[1]]['players'][socket.id].name, data[0], JSON.stringify(rooms[data[1]])]);
+        socket.emit('youWonFriendsAndFamily', JSON.stringify(rooms[data[1]]));
+    });
+
+    socket.on('friendsAndFamilyLoser', (data) => {
+        //data: gameCode
+        socket.to(data).emit('friendsAndFamilyLoserNotify', rooms[data]['players'][socket.id].name);
+        socket.emit('youLostFriendsAndFamily');
+    })
 });
 
 

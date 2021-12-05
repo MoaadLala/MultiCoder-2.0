@@ -1,11 +1,13 @@
 import './Game.css';
-import { useLocation } from 'react-router';
-import { useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+import { useContext, useEffect, useRef, useState } from 'react';
 import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-twilight";
+import "ace-builds/src-noconflict/ext-language_tools"
+
 import ButtonedInputBox from '../ButtonedInputBox/ButtonedInputBox';
 import { User } from '../../App';
 
@@ -16,27 +18,55 @@ export default function Game(props) {
     const [activeTab, setActiveTab] = useState('question');
     const [messages, setMessages] = useState([]);
     const [question, setQuestion] = useState({});
+    const [timerId, setTimerId] = useState();
     const { user } = useContext(User);
+    const timerRef = useRef(0);
+    const navigate = useNavigate();
+
+    let solution = '';
 
     console.log(user);
 
     useEffect(() => {
-        state.question = JSON.parse(state.question);
-        setQuestion({
-            title: state.question['_fieldsProto']['title']['stringValue'],
-            madeBy: state.question['_fieldsProto']['madeBy']['stringValue'],
-            description: state.question['_fieldsProto']['description']['stringValue'],
-            testCases: state.question['_fieldsProto']['testCases']['arrayValue'],
-            examples: state.question['_fieldsProto']['examples']['arrayValue']['values'],
-            accountLink: state.question['_fieldsProto']['accountLink']['stringValue'],
-        });
+        setQuestion(JSON.parse(state.question));
 
-        
+        setTimerId(setInterval(() => {
+            timerRef.current++;
+            document.querySelector('.timerContainer').innerHTML = timerRef.current;
+        }, 1000));
+
         socket.on('globalMessage', (data) => {
             setMessages(messages => [...messages, data]);
         });
+
+        socket.on('friendsAndFamilyWinnerNotify', (data) => {
+            //data[0]: name
+            //data[1]: time
+            //data[2]: newPlayersObject (string)
+            showNotificationSection(`<b>${data[0]}</b> has Won! his timescore is ${data[1]}`, '#528a08');
+        });
+
+        socket.on('youWonFriendsAndFamily', (data) => {
+            //data: newPlayersObject (string)
+            console.log(`You Won! Congrats, here, update yourself ${data}`);
+            navigate('/lobby', { state: { gameCode: state.gameCode, playersObj: JSON.parse(data) } });
+        });
+
+        socket.on('friendsAndFamilyLoserNotify', (data) => {
+            //data: name
+            showNotificationSection(`<b>${data}</b> submitted a broken code, what a loser`, '#9A1C0C');
+        });
+
+        socket.on('youLostFriendsAndFamily', () => {
+            console.log('you lost...');
+        });
+
         return () => {
             socket.off('globalMessage');
+            socket.off('friendsAndFamilyWinnerNotify');
+            socket.off('youWonFriendsAndFamily');
+            socket.off('friendsAndFamilyLoserNotify');
+            socket.off('youLostFriendsAndFamily');
         }
     }, []);
     console.log(question);
@@ -48,13 +78,66 @@ export default function Game(props) {
     }
 
     const changeHandler = event => {
-        console.log(event);
+        solution = event;
     }
+
+    const arrayComparison = (a, b) => {
+        return Array.isArray(a) &&
+        Array.isArray(b) &&
+        a.length === b.length &&
+        a.every((val, index) => val === b[index]);
+    }
+
+    const submitCode = () => {
+        clearInterval(timerId);
+        let result = true;
+        question.testCases.forEach(val => {
+            console.log('boo at start: ' + result);
+            let test = solution + `\nsortArr([${val.input}]);`;
+            console.log(test);
+            let answer = eval(test);
+            console.log(answer);
+            console.log(val.expectedOutput);
+            if (!arrayComparison(answer, val.expectedOutput)) {
+                result = false;
+            }
+            console.log('boo at finish: ' + result);
+        });
+        if (result) {
+            //Right Answer
+            console.log(timerRef.current);
+            socket.emit('friendsAndFamilyWinner', [timerRef.current, state.gameCode]);
+        } else {
+            //Wrong Answer
+            socket.emit('friendsAndFamilyLoser', state.gameCode);
+        }
+    }
+
+    const showNotificationSection = (msg, color) => {
+        const notificationSection = document.getElementById('gamePageNotificationContainer');
+        notificationSection.innerHTML = msg;
+        notificationSection.style.backgroundColor = color;
+        notificationSection.classList.add('fadeIn');
+        notificationSection.style.opacity = '1';
+        setTimeout(() => {
+            notificationSection.classList.remove('fadeIn');
+            notificationSection.classList.add('fadeOut');
+            setTimeout(() => {
+                notificationSection.style.opacity = '0';
+                notificationSection.classList.remove('fadeOut');
+            }, 400);
+        }, 8000);
+    }
+
+    console.log(solution);
 
     return (
         <div className="game">
             <div className="gameTopSection">
                 <div className="roomCodeContainer"><b>Room Code:</b> {state.gameCode}</div>
+                <div className="gameTopSectionRightSide">
+                    <span className="timerContainer">{timerRef.current}</span>
+                </div>
             </div>
             <div className="gameBoard">
                 <div className="gameLeftSide">
@@ -78,8 +161,8 @@ export default function Game(props) {
                                 ('examples' in question) ? (
                                     question.examples.map(val => (
                                         <div className="codeBlock">
-                                            <p>Input: {val.mapValue.fields.input.stringValue}</p>
-                                            <p>Input: {val.mapValue.fields.output.stringValue}</p>
+                                            <p>Input: {val.input}</p>
+                                            <p>Output: {val.output}</p>
                                         </div>
                                     ))
                                 ) : null
@@ -114,6 +197,7 @@ export default function Game(props) {
                     mode="javascript"
                     theme="monokai"
                     name="editor"
+                    value={question.starterCode}
                     editorProps={{ $blockScrolling: true }}
                     focus={true}
                     enableBasicAutocompletion={true}
@@ -126,9 +210,10 @@ export default function Game(props) {
                 </div>
             </div>
             <div className="gameBottomSection">
-                <div className="gameActionsBtns">
+                <div className="gameNotificationSection" id="gamePageNotificationContainer"></div>
+                <div className="gameActionBtns">
                     <button className="flatBtn--clicked">Btn</button>
-                    <button className="flatBtn">Btn</button>
+                    <button className="flatBtn" style={{marginLeft: '1em'}} onClick={submitCode}>Submit</button>
                 </div>
             </div>
         </div>

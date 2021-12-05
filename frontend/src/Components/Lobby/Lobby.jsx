@@ -59,6 +59,20 @@ export default function Lobby(props) {
             navigate('/game', { state: { gameCode: roomCode, question: data } });
         });
 
+        socket.on('friendsAndFamilyWinnerNotify', (data) => {
+            //data[0]: name
+            //data[1]: time
+            //data[2]: newPlayersObject (string)
+            console.log(`${data[0]} has Won! his timescore is ${data[1]}, and this object came along: ${data[2]}`);
+            showNotificationSection(`<b>${data[0]}</b> has Won! his timescore is ${data[1]}`, '#528a08');
+            setPlayersObj(JSON.parse(data[2]));
+        });
+
+        socket.on('friendsAndFamilyLoserNotify', (data) => {
+            //data: name
+            showNotificationSection(`<b>${data}</b> submitted a broken code, what a loser`, '#9A1C0C');
+        });
+
         setIsLoading(false);
         
         return () => {
@@ -66,6 +80,8 @@ export default function Lobby(props) {
             socket.off('kicked');
             socket.off('kickUser');
             socket.off('startFriendsAndFamily');
+            socket.off('friendsAndFamilyWinnerNotify');
+            socket.off('friendsAndFamilyLoserNotify');
         }
     }, []);
 
@@ -77,6 +93,22 @@ export default function Lobby(props) {
 
     const startGame = () => {
         socket.emit('startFriendsAndFamily', roomCode);
+    }
+
+    const showNotificationSection = (msg, color) => {
+        const notificationSection = document.getElementById('lobbyNotificationContainer');
+        notificationSection.innerHTML = msg;
+        notificationSection.style.backgroundColor = color;
+        notificationSection.classList.add('fadeIn');
+        notificationSection.style.opacity = '1';
+        setTimeout(() => {
+            notificationSection.classList.remove('fadeIn');
+            notificationSection.classList.add('fadeOut');
+            setTimeout(() => {
+                notificationSection.style.opacity = '0';
+                notificationSection.classList.remove('fadeOut');
+            }, 400);
+        }, 8000);
     }
     
     console.log(playersObj);
@@ -98,13 +130,18 @@ export default function Lobby(props) {
                         <div className="lobbyPlayer">
                             <div className="lobbyPlayerDescription">
                                 <img src={playersObj['players'][key].photo} alt="" />
-                                <h4 className="greyish">{playersObj['players'][key].name} {(playersObj['players'][key].admin) ? (<i class="fas fa-crown"></i>) : null}</h4>
+                                <h4>{playersObj['players'][key].name} {(playersObj['players'][key].admin) ? (<i class="fas fa-crown"></i>) : null}</h4>
                             </div>
-                            {
-                                (user.admin && !playersObj['players'][key].admin) ? (
-                                    <button onClick={() => kickUser(key)} className="kickBtn"><i class="fas fa-door-open"></i></button>
-                                ) : null
-                            }
+                                {
+                                    (playersObj['players'][key].timeScore !== 0) ? (
+                                        <span className="winnerTimeScore">{playersObj['players'][key].timeScore}</span>
+                                    ) : null
+                                }
+                                {
+                                    (user.admin && !playersObj['players'][key].admin && !playersObj.closed) ? (
+                                        <button onClick={() => kickUser(key)} className="kickBtn"><i class="fas fa-door-open"></i></button>
+                                    ) : null
+                                }
                         </div>
                     ))
                 }
@@ -113,19 +150,20 @@ export default function Lobby(props) {
                         <div className="lobbyPlayer">
                             <div className="lobbyPlayerDescription">
                                 <img src={playersObj['spectators'][key].photo} alt="" />
-                                <h4 className="greyish">{playersObj['spectators'][key].name} {(playersObj['spectators'][key].admin) ? (<i class="fas fa-crown"></i>): null}</h4>
+                                <h4>{playersObj['spectators'][key].name} {(playersObj['spectators'][key].admin) ? (<i class="fas fa-crown"></i>): null}</h4>
                             </div>
                             {
-                                (user.admin && !playersObj['spectators'][key].admin) ? (
+                                (user.admin && !playersObj['spectators'][key].admin && !playersObj.closed) ? (
                                     <button onClick={() => kickUser(key)} className="kickBtn"><i class="fas fa-door-open"></i></button>
                                 ) : null
                             }
                         </div>
                     ))
                 }
+                <div className="gameNotificationSection" id="lobbyNotificationContainer"></div>
             </div>
             {
-                (user.admin) ? (
+                (user.admin && !playersObj.closed) ? (
                     <button className="flatBtn" onClick={startGame}> Start </button>
                 ) : null
             }
