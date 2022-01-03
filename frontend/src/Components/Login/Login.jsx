@@ -2,7 +2,6 @@ import './Login.css';
 import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, GithubAuthProvider } from 'firebase/auth';
 import { useContext } from 'react';
 import { User } from '../../App';
-import { Socket } from 'socket.io-client';
 
 export default function Login(props) {
     const {user, setUser} = useContext(User);

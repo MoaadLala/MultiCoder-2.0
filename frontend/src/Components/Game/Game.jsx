@@ -19,7 +19,7 @@ export default function Game(props) {
     const [messages, setMessages] = useState([]);
     const [question, setQuestion] = useState({});
     const [timerId, setTimerId] = useState();
-    const { user } = useContext(User);
+    const { user, setUser } = useContext(User);
     const timerRef = useRef(0);
     const navigate = useNavigate();
 
@@ -61,12 +61,22 @@ export default function Game(props) {
             console.log('you lost...');
         });
 
+        socket.on('newAdmin', () => {
+            setUser({
+                name: user.displayName,
+                email: user.email,
+                photo: user.photoURL,
+                admin: true,
+            });
+        });
+
         return () => {
             socket.off('globalMessage');
             socket.off('friendsAndFamilyWinnerNotify');
             socket.off('youWonFriendsAndFamily');
             socket.off('friendsAndFamilyLoserNotify');
             socket.off('youLostFriendsAndFamily');
+            socket.off('newAdmin');
         }
     }, []);
     console.log(question);
@@ -89,22 +99,20 @@ export default function Game(props) {
     }
 
     const submitCode = () => {
-        clearInterval(timerId);
         let result = true;
         question.testCases.forEach(val => {
-            console.log('boo at start: ' + result);
             let test = solution + `\nsortArr([${val.input}]);`;
-            console.log(test);
+            //This eval call must change, preferable with an RCM
             let answer = eval(test);
-            console.log(answer);
-            console.log(val.expectedOutput);
-            if (!arrayComparison(answer, val.expectedOutput)) {
-                result = false;
+            if (question.dataType == "Array") {
+                if (!arrayComparison(answer, val.expectedOutput)) {
+                    result = false;
+                }
             }
-            console.log('boo at finish: ' + result);
         });
         if (result) {
             //Right Answer
+            clearInterval(timerId);
             console.log(timerRef.current);
             socket.emit('friendsAndFamilyWinner', [timerRef.current, state.gameCode]);
         } else {

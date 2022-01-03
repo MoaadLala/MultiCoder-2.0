@@ -88,13 +88,18 @@ export default function Play(props) {
     }
 
     const joinARoom = () => {
-        socket.emit('joinARoom', joinCode);
+        socket.emit('joinARoom', [joinCode, user.email]);
         socket.on('joinARoom', (data) => {
             if (data[0]) {
                 navigate("/lobby", { state: { gameCode: joinCode, playersObj: JSON.parse(data[1]) } } );
             } else {
                 // Write an error handler
                 console.log('Error joining: No room with this code exists');
+                if (data[1] === 'NoRoom') {
+                    showWarning('Error joining: No room with this code exists.');
+                } else if (data[1] === 'Kicked') {
+                    showWarning('Sorry, but you\'ve already been kicked from this room');
+                }
             }
         })
     }

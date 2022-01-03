@@ -59,6 +59,15 @@
     margin-top: 2em;
 }
 
+.winnerColor {
+    color: #528a08;
+}
+
+img.winnerColor {
+    border: 4px solid #528a08;
+    border-radius: 4px;
+}
+
 
 @media only screen and (max-width: 470px) {
     .lobbyPlayersContainer {
