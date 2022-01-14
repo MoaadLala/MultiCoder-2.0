@@ -37,10 +37,58 @@ app.get('/', (req, res) => {
 
 let rooms = {};
 
+const userLeave = (roomCode, id) => {
+    let room = rooms[roomCode];
+    if (Object.keys(room['players']).length + Object.keys(room['spectators']).length + Object.keys(room['winners']).length === 1) {
+        delete rooms[roomCode];
+    } else if (room['players'][id]) {
+        if (room['players'][id].admin) {
+            room['players'][Object.keys(rooms[data[0]]['players'])[1]].admin = true;
+            io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(room)]);
+            delete room['players'][id];
+            io.to(Object.keys(room['players'])[0]).emit('newAdmin');
+        } else {
+            io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(room)]);
+            delete room['players'][id];
+        }
+    } else if (room['spectators'][id]) {
+        if (room['spectators'][id].admin) {
+            room['spectators'][Object.keys(rooms[data[0]]['spectators'])[1]].admin = true;
+            io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(room)]);
+            delete room['spectators'][id];
+            console.log(JSON.stringify(rooms));
+        } else {
+            io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(room)]);
+            delete room['spectators'][id];
+        }
+    } else {
+        if (room['winners'][id].admin) {
+            room['winners'][Object.keys(room['winners'])[1]].admin = true;
+            io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(room)]);
+            delete room['winners'][id];
+            console.log(JSON.stringify(rooms));
+        } else {
+            io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(rooms[data[0]])]);
+            delete room['winners'][id];
+        }
+    }
+
+    console.log(JSON.stringify(rooms));
+}
+
 io.on('connection', (socket) => {
     console.log(`New User Is Here, id = ${socket.id}`);
     socket.on('disconnect', () => {
         console.log('User Disconnected');
+    });
+
+    socket.on('disconnecting', () => {
+        console.log(socket.id);
+        socket.rooms.forEach(item => {
+            if (item !== socket.id) {
+                userLeave(item, socket.id);
+            }
+        })
     });
 
     socket.on('login', (data) => {
@@ -60,11 +108,13 @@ io.on('connection', (socket) => {
                     photo: socket.photo,
                     email: socket.email,
                     admin: true,
+                    spectators: [],
                 },
             },
             spectators: {},
             winners: {},
             kicked: {},
+            question: {},
             closed: false,
         };
         socket.emit('friendsAndFamilyGameCreated', [roomCode, JSON.stringify(rooms[roomCode])]);
@@ -93,6 +143,7 @@ io.on('connection', (socket) => {
                             photo: socket.photo,
                             email: socket.email,
                             admin: false,
+                            spectators: [],
                         }
                     }
                 } else {
@@ -103,6 +154,7 @@ io.on('connection', (socket) => {
                             photo: socket.photo,
                             email: socket.email,
                             admin: false,
+                            spectators: [],
                         }
                     }
                 }
@@ -121,36 +173,9 @@ io.on('connection', (socket) => {
         // this could be sent from:
         // 1. Lobby Component, when a user is kicked or when a user leaves
         console.log('leaveRoom was triggered');
-        console.log(socket.id);
+        console.log(socket.rooms);
         if (data[1] === false) {
-            if (rooms[data[0]]['players'][socket.id]) {
-                if (rooms[data[0]]['players'][socket.id].admin) {
-                    rooms[data[0]]['players'][Object.keys(rooms[data[0]]['players'])[1]].admin = true;
-                    io.to(data[0]).except(socket.id).emit('leaveMove', [socket.id, JSON.stringify(rooms[data[0]])]);
-                    delete rooms[data[0]]['players'][socket.id];
-                    io.to(Object.keys(rooms[data[0]]['players'])[0]).emit('newAdmin');
-                } else {
-                    delete rooms[data[0]]['players'][socket.id];
-                }
-            } else if (rooms[data[0]]['spectators'][socket.id]) {
-                if (rooms[data[0]]['spectators'][socket.id].admin) {
-                    rooms[data[0]]['spectators'][Object.keys(rooms[data[0]]['spectators'])[1]].admin = true;
-                    io.to(data[0]).except(socket.id).emit('leaveMove', [socket.id, JSON.stringify(rooms[data[0]])]);
-                    delete rooms[data[0]]['spectators'][socket.id];
-                    console.log(JSON.stringify(rooms));
-                } else {
-                    delete rooms[data[0]]['spectators'][socket.id];
-                }
-            } else {
-                if (rooms[data[0]]['winners'][socket.id].admin) {
-                    rooms[data[0]]['winners'][Object.keys(rooms[data[0]]['winners'])[1]].admin = true;
-                    io.to(data[0]).except(socket.id).emit('leaveMove', [socket.id, JSON.stringify(rooms[data[0]])]);
-                    delete rooms[data[0]]['winners'][socket.id];
-                    console.log(JSON.stringify(rooms));
-                } else {
-                    delete rooms[data[0]]['winners'][socket.id];
-                }
-            }
+            userLeave(data[0], socket.id);
         }
 
         socket.leave(data[0]);
@@ -173,15 +198,18 @@ io.on('connection', (socket) => {
     socket.on('startFriendsAndFamily', async(data) => {
         //data: roomCode
         const questions = await db.collection('questions').get();
-        io.to(data).emit('startFriendsAndFamily', JSON.stringify(questions.docs[randomQuestionIndex(0, questions.size)].data()));
+        rooms[data].question = JSON.stringify(questions.docs[randomQuestionIndex(0, questions.size)].data());
+        io.to(data).emit('startFriendsAndFamily', rooms[data].question);
         rooms[data].closed = true;
     });
 
     socket.on('friendsAndFamilyWinner', (data) => {
         //data[0]: timer
         //data[1]: gameCode
+        //data[2]: solution
         rooms[data[1]]['winners'][socket.id] = rooms[data[1]]['players'][socket.id];
         rooms[data[1]]['winners'][socket.id].timeScore = data[0];
+        rooms[data[1]]['winners'][socket.id].solution = data[2];
         delete rooms[data[1]]['players'][socket.id];
         socket.to(data[1]).emit('friendsAndFamilyWinnerNotify', [rooms[data[1]]['winners'][socket.id].name, data[0], JSON.stringify(rooms[data[1]])]);
         socket.emit('youWonFriendsAndFamily', JSON.stringify(rooms[data[1]]));
@@ -211,6 +239,25 @@ io.on('connection', (socket) => {
         // data[1] = roomCode
         delete rooms[data[1]]['kicked'][data[0]];
         socket.emit('unban', JSON.stringify(rooms[data[1]]));
+    });
+
+    socket.on('spectate', data => {
+        //data[0]: roomCode
+        //data[1]: userId
+        rooms[data[0]]['players'][data[1]]['spectators'].push(socket.id);
+        socket.emit('spectate', rooms[data[0]].question);
+    });
+
+    socket.on('spectatorsUpdate', data => {
+        // data[0]: player code
+        // data[1]: roomCode
+        io.to(rooms[data[1]]['players'][socket.id]['spectators']).emit('newSpectatorsData', data[0]);
+    });
+
+    socket.on('view', data => {
+        //data[0]: roomCode
+        //data[1]: userId
+        socket.emit('view', [rooms[data[0]].question, rooms[data[0]]['winners'][data[1]].solution]);
     });
 });
 
