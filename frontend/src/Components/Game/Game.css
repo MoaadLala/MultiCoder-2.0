@@ -178,6 +178,67 @@
     margin-left: auto;
 }
 
+.testCaseContainer {
+    margin: 1em;
+}
+
+.testCaseContainer i {
+    transition: .4s;
+}
+
+.testCase {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #494B50;
+    padding: .7em 1em;
+    border-radius: 3px;
+}
+
+.testCase h4, .testCase p {
+    margin: 0;
+}
+
+.testCaseLeftSide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: left;
+}
+
+.testCaseLeftSide img {
+    height: 40px;
+    margin-right: 1em;
+}
+
+.testCaseContent {
+    position: relative;
+    height: 0;
+    overflow: hidden;
+    transition: .5s;
+    background-color: var(--main-black);
+}
+
+.testCaseContent h5 {
+    margin: 1.2em;
+}
+
+.testCaseContainer.active {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.testCaseContainer.active i {
+    transform: rotate(180deg);
+    transition: .4s;
+}
+
+.testCaseContainer.active .testCaseContent {
+    height: 90px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
 @media only screen and (max-width: 820px) {
     .gameBoard {
         grid-template-columns: 1fr;

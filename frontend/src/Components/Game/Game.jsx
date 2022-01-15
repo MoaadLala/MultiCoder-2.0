@@ -10,6 +10,7 @@ import "ace-builds/src-noconflict/ext-language_tools"
 
 import ButtonedInputBox from '../ButtonedInputBox/ButtonedInputBox';
 import { User } from '../../App';
+import testCaseIcon from '../../assets/testCase.svg';
 
 
 export default function Game(props) {
@@ -17,23 +18,23 @@ export default function Game(props) {
     const { state } = useLocation();
     const [activeTab, setActiveTab] = useState('question');
     const [messages, setMessages] = useState([]);
-    const [question, setQuestion] = useState({});
     const [timerId, setTimerId] = useState();
+    const solution = useRef(state.question.starterCode);
+    const [spectatorSolution, setSpectatorSolution] = useState(state.question.starterCode);
     const { user, setUser } = useContext(User);
-    const timerRef = useRef(0);
+    const timerRef = useRef((state.isSpectator) ? state.timer : 0);
     const navigate = useNavigate();
 
-    let solution = '';
-
-    console.log(user);
-
+    
     useEffect(() => {
-        setQuestion(JSON.parse(state.question));
+        console.log(state.question);
 
-        setTimerId(setInterval(() => {
-            timerRef.current++;
-            document.querySelector('.timerContainer').innerHTML = timerRef.current;
-        }, 1000));
+        if (!state.isView) {
+            setTimerId(setInterval(() => {
+                timerRef.current++;
+                document.querySelector('.timerContainer').innerHTML = timerRef.current;
+            }, 1000));
+        }
 
         socket.on('globalMessage', (data) => {
             setMessages(messages => [...messages, data]);
@@ -70,6 +71,18 @@ export default function Game(props) {
             });
         });
 
+        socket.on('newSpectatorsData', data => {
+            // data: Players Code
+            setSpectatorSolution(data);
+            // console.log(data);
+        });
+
+        socket.on('spectatorTimerRequest', (data) => {
+            //data: socket.id
+            console.log(`Timer request is here, socket.id: ${data}`);
+            socket.emit('spectatorTimerRequest', [timerRef.current, data, state.gameCode]);
+        });
+
         return () => {
             socket.off('globalMessage');
             socket.off('friendsAndFamilyWinnerNotify');
@@ -77,9 +90,11 @@ export default function Game(props) {
             socket.off('friendsAndFamilyLoserNotify');
             socket.off('youLostFriendsAndFamily');
             socket.off('newAdmin');
+            socket.off('newSpectatorsData');
+            socket.off('spectatorTimerRequest');
         }
     }, []);
-    console.log(question);
+    console.log(state.question);
 
     const updateTabState = (newTab) => {
         document.querySelector('.tabBarItem-active').classList.remove('tabBarItem-active');
@@ -88,7 +103,8 @@ export default function Game(props) {
     }
 
     const changeHandler = event => {
-        solution = event;
+        solution.current = event;
+        socket.emit('spectatorsUpdate', [solution.current, state.gameCode]);
     }
 
     const arrayComparison = (a, b) => {
@@ -100,11 +116,11 @@ export default function Game(props) {
 
     const submitCode = () => {
         let result = true;
-        question.testCases.forEach(val => {
-            let test = solution + `\nsortArr([${val.input}]);`;
-            //This eval call must change, preferable with an RCM
+        state.question.testCases.forEach(val => {
+            let test = solution.current + `\nsortArr([${val.input}]);`;
+            //This eval call must change, preferable with an RCE
             let answer = eval(test);
-            if (question.dataType == "Array") {
+            if (state.question.dataType == "Array") {
                 if (!arrayComparison(answer, val.expectedOutput)) {
                     result = false;
                 }
@@ -114,7 +130,7 @@ export default function Game(props) {
             //Right Answer
             clearInterval(timerId);
             console.log(timerRef.current);
-            socket.emit('friendsAndFamilyWinner', [timerRef.current, state.gameCode]);
+            socket.emit('friendsAndFamilyWinner', [timerRef.current, state.gameCode, solution.current]);
         } else {
             //Wrong Answer
             socket.emit('friendsAndFamilyLoser', state.gameCode);
@@ -137,7 +153,12 @@ export default function Game(props) {
         }, 8000);
     }
 
-    console.log(solution);
+    const showTestCase = index => {
+        const testCase = document.getElementById(`testCaseNum${index}`);
+        testCase.classList.toggle('active');
+    }
+
+    console.log(solution.current);
 
     return (
         <div className="game">
@@ -156,18 +177,14 @@ export default function Game(props) {
                     </div>
                     <div className="tabBarView" id="question" style={{display: (activeTab === 'question') ? 'block' : 'none'}}>
                         <div className="questionHeading">
-                            <h2 className="title">{question.title}</h2>
-                            <p className="author"><a href={question.accountLink} target="_blank">By: {question.madeBy}</a></p>
+                            <h2 className="title">{state.question.title}</h2>
+                            <p className="author"><a href={state.question.accountLink} target="_blank">By: {state.question.madeBy}</a></p>
                         </div>
                         <div className="questionDescription">
-                            {question.description}
-                            {/* <div className="codeBlock">
-                                <p>Input: [1, 32, 12, 34, 231, 42]</p>
-                                <p>output: [1, 12, 32, 34, 42, 231]</p>
-                            </div> */}
+                            {state.question.description}
                             {
-                                ('examples' in question) ? (
-                                    question.examples.map(val => (
+                                ('examples' in state.question) ? (
+                                    state.question.examples.map(val => (
                                         <div className="codeBlock">
                                             <p>Input: {val.input}</p>
                                             <p>Output: {val.output}</p>
@@ -178,7 +195,26 @@ export default function Game(props) {
                         </div>
                     </div>
                     <div className="tabBarView" id="console" style={{display: (activeTab === 'console') ? 'block' : 'none'}}>
-                        <h2>Console</h2>
+                        {
+                            state.question.testCases.map((val, index) => (
+                                <div className="testCaseContainer" id={`testCaseNum${index}`} onClick={(val.isOpen) ? () => showTestCase(index) : null} >
+                                    <div className="testCase">
+                                        <div className="testCaseLeftSide">
+                                            <img src={testCaseIcon} alt=""/>
+                                            <div>
+                                                <h4>Test Case</h4>
+                                                <p className="greyish">{(val.isOpen) ? 'Open' : 'Closed'}</p>
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-angle-down"></i>
+                                    </div>
+                                    <div className="testCaseContent">
+                                        <h5>Input: {val.input}</h5>
+                                        <h5>Expected Output: {val.expectedOutput}</h5>
+                                    </div>
+                                </div>
+                            ))
+                        }
                     </div>
                     <div className="tabBarView" id="chat" style={{display: (activeTab === 'chat') ? 'flex' : 'none'}}>
                         <div className="chatContainer">
@@ -205,7 +241,7 @@ export default function Game(props) {
                     mode="javascript"
                     theme="monokai"
                     name="editor"
-                    value={question.starterCode}
+                    value={(state.isView) ? state.code : (state.isSpectator) ? spectatorSolution : solution.current}
                     editorProps={{ $blockScrolling: true }}
                     focus={true}
                     enableBasicAutocompletion={true}
@@ -214,12 +250,14 @@ export default function Game(props) {
                     width="100%"
                     fontSize={16}
                     onChange={changeHandler}
+                    readOnly={(state.isSpectator || state.isView) ? true : false}
+                    // placeholder="You deleted the test functions, you sortof need that for the testcases to work, just do a quick restart or something.."
                 />
                 </div>
             </div>
             <div className="gameBottomSection">
                 <div className="gameNotificationSection" id="gamePageNotificationContainer"></div>
-                <div className="gameActionBtns">
+                <div className="gameActionBtns" style={{display: (state.isSpectator || state.isView ? 'none' : 'block')}}>
                     <button className="flatBtn--clicked">Btn</button>
                     <button className="flatBtn" style={{marginLeft: '1em'}} onClick={submitCode}>Submit</button>
                 </div>

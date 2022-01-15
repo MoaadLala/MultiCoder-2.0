@@ -75,7 +75,7 @@ export default function Lobby(props) {
         });
 
         socket.on('startFriendsAndFamily', (data) => {
-            navigate('/game', { state: { gameCode: roomCode, question: data } });
+            navigate('/game', { state: { gameCode: roomCode, question: JSON.parse(data), isSpectator: false } });
         });
 
         socket.on('friendsAndFamilyWinnerNotify', (data) => {
@@ -161,7 +161,25 @@ export default function Lobby(props) {
         socket.emit('leaveRoom', [roomCode, false]);
         navigate('/play', {state: { kicked: false }});
     }
-    
+
+    const spectate = key => {
+        socket.emit('spectate', [roomCode, key]);
+        socket.on('spectate', data => {
+            //data[0]: question
+            //data[1]: timer
+            navigate('/game', { state: { gameCode: roomCode, question: JSON.parse(data[0]), isSpectator: true, isView: false, timer: data[1] } });
+        });
+    }
+
+    const view = key => {
+        socket.emit('view', [roomCode, key]);
+        socket.on('view', data => {
+            //data[0]: question
+            //data[1]: code
+            navigate('/game', { state: { gameCode: roomCode, question: JSON.parse(data[0]), isSpectator: false, isView: true, code: data[1]} });
+        });
+    }
+
     console.log(playersObj);
 
     if (isLoading) {
@@ -179,7 +197,7 @@ export default function Lobby(props) {
                 {
                     (Object.keys(playersObj['winners']).length > 0) ? 
                     Object.keys(playersObj['winners']).map(key => (
-                        <div className="lobbyPlayer">
+                        <div className="lobbyPlayer" onClick={() => view(key)}>
                             <div className="lobbyPlayerDescription">
                                 <img className="winnerColor" src={playersObj['winners'][key].photo} alt="" />
                                 <h4 className="winnerColor">{playersObj['winners'][key].name} {(playersObj['winners'][key].admin) ? (<i class="fas fa-crown"></i>) : null}</h4>
@@ -195,7 +213,7 @@ export default function Lobby(props) {
                 }
                 {
                     Object.keys(playersObj['players']).map(key => (
-                        <div className="lobbyPlayer">
+                        <div className="lobbyPlayer" onClick={() => spectate(key)}>
                             <div className="lobbyPlayerDescription">
                                 <img src={playersObj['players'][key].photo} alt="" />
                                 <h4>{playersObj['players'][key].name} {(playersObj['players'][key].admin) ? (<i class="fas fa-crown"></i>) : null}</h4>
@@ -210,7 +228,7 @@ export default function Lobby(props) {
                 }
                 {
                     Object.keys(playersObj['spectators']).map(key => (
-                        <div className="lobbyPlayer">
+                        <div className="lobbyPlayer" style={{cursor: 'default'}}>
                             <div className="lobbyPlayerDescription">
                                 <img src={playersObj['spectators'][key].photo} alt="" />
                                 <h4>{playersObj['spectators'][key].name} {(playersObj['spectators'][key].admin) ? (<i class="fas fa-crown"></i>): null}</h4>

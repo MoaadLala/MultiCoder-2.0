@@ -245,7 +245,21 @@ io.on('connection', (socket) => {
         //data[0]: roomCode
         //data[1]: userId
         rooms[data[0]]['players'][data[1]]['spectators'].push(socket.id);
-        socket.emit('spectate', rooms[data[0]].question);
+        socket.to(data[1]).emit('spectatorTimerRequest', socket.id);
+        // io.on('spectatorTimerRequest', (timerData) => {
+        //     console.log(`the timer request had ${timerData[0]} as it's response`);
+        //     // timerData[0]: timer
+        //     // timerData[1]: socket.id
+        //     io.to(timerData[1]).emit('spectate', [rooms[data[0]].question, timerData[0]]);
+        // });
+    });
+
+    socket.on('spectatorTimerRequest', (data) => {
+        //data[0]: timer
+        //data[1]; socket.id
+        //data[2]: room Code
+        console.log(`Got the timer request back: ${data[0]}`);
+        socket.to(data[1]).emit('spectate', [rooms[data[2]].question, data[0]]);
     });
 
     socket.on('spectatorsUpdate', data => {
