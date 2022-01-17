@@ -172,6 +172,18 @@
     opacity: 0;
     padding: .5em 1em;
     border-radius: 4px;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+}
+
+.gameNotificationSection p {
+    margin: 0 0 0 .5em;
+}
+
+.gameNotificationSection img {
+    width: 40px;
+    height: 40px;
 }
 
 .gameActionBtns {

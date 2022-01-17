@@ -11,6 +11,8 @@ import "ace-builds/src-noconflict/ext-language_tools"
 import ButtonedInputBox from '../ButtonedInputBox/ButtonedInputBox';
 import { User } from '../../App';
 import testCaseIcon from '../../assets/testCase.svg';
+import winnerIcon from '../../assets/winnerIcon.svg';
+import loserIcon from '../../assets/loserIcon.svg';
 
 
 export default function Game(props) {
@@ -44,7 +46,7 @@ export default function Game(props) {
             //data[0]: name
             //data[1]: time
             //data[2]: newPlayersObject (string)
-            showNotificationSection(`<b>${data[0]}</b> has Won! his timescore is ${data[1]}`, '#528a08');
+            showNotificationSection(`<img src=${winnerIcon} alt="" /><p><b>${data[0]}</b> has Won! his timescore is ${data[1]}</p>`, '#528a08');
         });
 
         socket.on('youWonFriendsAndFamily', (data) => {
@@ -55,7 +57,7 @@ export default function Game(props) {
 
         socket.on('friendsAndFamilyLoserNotify', (data) => {
             //data: name
-            showNotificationSection(`<b>${data}</b> submitted a broken code, what a loser`, '#9A1C0C');
+            showNotificationSection(`<img src=${loserIcon} alt="" /><p><b>${data}</b> submitted a broken code, what a loser</p>`, '#9A1C0C');
         });
 
         socket.on('youLostFriendsAndFamily', () => {

@@ -2,6 +2,8 @@ import { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import './Lobby.css';
 import { User } from '../../App';
+import winnerIcon from '../../assets/winnerIcon.svg';
+import loserIcon from '../../assets/loserIcon.svg';
 
 export default function Lobby(props) {
     const { user, setUser } = useContext(User);
@@ -83,13 +85,13 @@ export default function Lobby(props) {
             //data[1]: time
             //data[2]: newPlayersObject (string)
             console.log(`${data[0]} has Won! his timescore is ${data[1]}, and this object came along: ${data[2]}`);
-            showNotificationSection(`<b>${data[0]}</b> has Won! his timescore is ${data[1]}`, '#528a08');
+            showNotificationSection(`<img src=${winnerIcon} alt="" /><p><b>${data[0]}</b> has Won! his timescore is ${data[1]}</p>`, '#528a08');
             setPlayersObj(JSON.parse(data[2]));
         });
 
         socket.on('friendsAndFamilyLoserNotify', (data) => {
             //data: name
-            showNotificationSection(`<b>${data}</b> submitted a broken code, what a loser`, '#9A1C0C');
+            showNotificationSection(`<img src=${loserIcon} alt="" /><p><b>${data}</b> submitted a broken code, what a loser</p>`, '#9A1C0C');
         });
 
         socket.on('friendsAndFamilyGameRestarted', (data) => {
@@ -257,8 +259,8 @@ export default function Lobby(props) {
                         </div>
                     )) : null
                 }
+                <div className="gameNotificationSection" id="lobbyNotificationContainer"></div>
             </div>
-            <div className="gameNotificationSection" id="lobbyNotificationContainer"></div>
             {
                 (user.admin && !playersObj.closed) ? (
                     <button className="flatBtn" onClick={startGame} style={{display: 'block', margin: '1em auto'}}> Start </button>
