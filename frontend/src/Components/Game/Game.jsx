@@ -13,6 +13,11 @@ import { User } from '../../App';
 import testCaseIcon from '../../assets/testCase.svg';
 import winnerIcon from '../../assets/winnerIcon.svg';
 import loserIcon from '../../assets/loserIcon.svg';
+import runningTestCase from '../../assets/runningTestCase.svg';
+import wrongTestCase from '../../assets/wrongTestCase.svg';
+import correctTestCase from '../../assets/correctTestCase.svg';
+import wrongAnswerIcon from '../../assets/wrongAnswerIcon.svg';
+import finalWinningResultImg from '../../assets/finalWinningResult.svg';
 
 
 export default function Game(props) {
@@ -104,6 +109,25 @@ export default function Game(props) {
         setActiveTab(newTab);
     }
 
+    const updateTestCaseWithRunning = index => {
+        console.log(index);
+        const testCase = document.getElementById(`testCaseNum${index}`);
+        const testCaseIcon = document.getElementById(`testCaseIconNum${index}`);
+        testCaseIcon.src = runningTestCase;
+    }
+
+    const updateTestCaseWithWrongAnswer = index => {
+        const testCase = document.getElementById(`testCaseNum${index}`);
+        const testCaseIcon = document.getElementById(`testCaseIconNum${index}`);
+        testCaseIcon.src = wrongTestCase;
+    }
+
+    const updateTestCaseWithCorrectAnswer = index => {
+        const testCase = document.getElementById(`testCaseNum${index}`);
+        const testCaseIcon = document.getElementById(`testCaseIconNum${index}`);
+        testCaseIcon.src = correctTestCase;
+    }
+
     const changeHandler = event => {
         solution.current = event;
         socket.emit('spectatorsUpdate', [solution.current, state.gameCode]);
@@ -118,23 +142,83 @@ export default function Game(props) {
 
     const submitCode = () => {
         let result = true;
-        state.question.testCases.forEach(val => {
+        state.question.testCases.forEach((val, index) => {
+            updateTestCaseWithRunning(index);
             let test = solution.current + `\nsortArr([${val.input}]);`;
             //This eval call must change, preferable with an RCE
             let answer = eval(test);
             if (state.question.dataType == "Array") {
                 if (!arrayComparison(answer, val.expectedOutput)) {
+                    // Not an AC on this test case.
                     result = false;
+                    updateTestCaseWithWrongAnswer(index);
+                } else {
+                    // Everything is good with this test case
+                    updateTestCaseWithCorrectAnswer(index);
                 }
             }
         });
         if (result) {
-            //Right Answer
-            clearInterval(timerId);
-            console.log(timerRef.current);
-            socket.emit('friendsAndFamilyWinner', [timerRef.current, state.gameCode, solution.current]);
+            setTimeout(() => {
+                clearInterval(timerId);
+                //Right Answer
+                console.log(timerRef.current);
+                
+                const glass = document.getElementById('glass');
+                const finalWinningResult = document.getElementById('finalWinningResult');
+                const nav = document.getElementsByTagName('nav')[0];
+                glass.classList.add('fadeIn');
+                glass.style.display = 'flex';
+                nav.style.display = 'none';
+                document.body.style.overflow = 'hidden';
+                for (let i=0;i<100;i++) {
+                    var randomRotation = Math.floor(Math.random() * 360);
+                    var randomWidth = Math.floor(Math.random() * Math.max(document.documentElement.clientWidth, window.innerWidth || 0));
+                    var randomHeight = Math.floor(Math.random() * Math.max(document.documentElement.clientHeight, window.innerHeight || 500));
+                    var randomAnimationDelay = Math.floor(Math.random() * 15);
+                    console.log(randomAnimationDelay);
+                    var colors = ['#0CD977', '#FF1C1C', '#FF93DE', '#5767ED', '#FFC61C', '#8497B0'];
+                    var randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                    var confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.top = randomHeight + 'px';
+                    confetti.style.right = randomWidth + 'px';
+                    confetti.style.backgroundColor = randomColor;
+                    confetti.style.transform='skew(15deg) rotate(' + randomRotation + 'deg)';
+                    confetti.style.animationDelay=randomAnimationDelay + 's';
+                    document.getElementById("glass").appendChild(confetti);
+                }
+                setTimeout(() => {
+                    glass.classList.remove('fadeIn');
+                    finalWinningResult.classList.add('fadeIn');
+                    finalWinningResult.style.display = 'block';
+                    setTimeout(() => {
+                        finalWinningResult.classList.remove('fadeIn');
+                        setTimeout(() => {
+                            nav.style.display = 'flex';
+                            document.body.style.overflowY = 'auto';
+                            socket.emit('friendsAndFamilyWinner', [timerRef.current, state.gameCode, solution.current]);
+                        }, 4000);
+                    }, 400);
+                }, 3000);
+            }, 2000);
         } else {
             //Wrong Answer
+            updateTabState('console');
+            const consoleNotificationContainer = document.getElementById('consoleNotificationContainer');
+            consoleNotificationContainer.style.display = 'flex';
+            consoleNotificationContainer.classList.add('shaking');
+            setTimeout(() => {
+                consoleNotificationContainer.classList.remove('shaking');
+            }, 500);
+            setTimeout(() => {
+                consoleNotificationContainer.classList.add('fadeOut');
+                setTimeout(() => {
+                    consoleNotificationContainer.style.display = 'none';
+                    consoleNotificationContainer.classList.remove('fadeOut');
+                }, 400);
+            }, 3500);
             socket.emit('friendsAndFamilyLoser', state.gameCode);
         }
     }
@@ -164,6 +248,14 @@ export default function Game(props) {
 
     return (
         <div className="game">
+            <div className="glass" id="glass">
+                <div className="finalWinningResult" id="finalWinningResult">
+                    <h2>Congratulations!</h2>
+                    <img src={finalWinningResultImg} alt="" />
+                    <p>You actually go them all. Am suprised!</p> 
+                    <h1><i class="fas fa-stopwatch"></i>: {timerRef.current}</h1>
+                </div>
+            </div>
             <div className="gameTopSection">
                 <div className="roomCodeContainer"><b>Room Code:</b> {state.gameCode}</div>
                 <div className="gameTopSectionRightSide">
@@ -202,7 +294,7 @@ export default function Game(props) {
                                 <div className="testCaseContainer" id={`testCaseNum${index}`} onClick={(val.isOpen) ? () => showTestCase(index) : null} >
                                     <div className="testCase">
                                         <div className="testCaseLeftSide">
-                                            <img src={testCaseIcon} alt=""/>
+                                            <img id={`testCaseIconNum${index}`} src={testCaseIcon} alt=""/>
                                             <div>
                                                 <h4>Test Case</h4>
                                                 <p className="greyish">{(val.isOpen) ? 'Open' : 'Closed'}</p>
@@ -217,6 +309,13 @@ export default function Game(props) {
                                 </div>
                             ))
                         }
+                        <div className="gameNotificationSection" id="consoleNotificationContainer">
+                            <img src={wrongAnswerIcon} alt="" />
+                            <div>
+                                <h4>Idiot :(</h4>
+                                <p className="greyish">We're telling everyone</p>
+                            </div>
+                        </div>
                     </div>
                     <div className="tabBarView" id="chat" style={{display: (activeTab === 'chat') ? 'flex' : 'none'}}>
                         <div className="chatContainer">
