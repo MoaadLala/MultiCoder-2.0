@@ -6,10 +6,13 @@ import homePro2 from '../../assets/homePro2.svg';
 import homePro3 from '../../assets/homePro3.svg';
 import homePro4 from '../../assets/homePro4.svg';
 import homeGreySecitonImg from '../../assets/homeGreySection.svg';
+import AnimatedDiv from "../AnimatedDiv/AnimatedDiv";
+
 
 export default function Home() {
   return (
-      <div className="home">
+      <AnimatedDiv>
+          <div className="home">
             <div className="homeHero">
                 <div>
                     <h1>Fight to Earn your Place in a PVP Coding Competition</h1>
@@ -79,5 +82,6 @@ export default function Home() {
                 </div>
             </div>
       </div>
+      </AnimatedDiv>
   )
 }

@@ -38,14 +38,14 @@ function App() {
     <User.Provider value={value}>
       <Router>
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/play" element={<Play socket={socket}/>} />
-          <Route path="/game" element={<Game socket={socket}/>} />
-          <Route path="/login" element={<Login socket={socket} />} />
-          <Route path="/lobby" element={<Lobby socket={socket} />} />
-          {/* <Redirect to="/" /> */}
-        </Routes>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/play" element={<Play socket={socket}/>} />
+            <Route path="/game" element={<Game socket={socket}/>} />
+            <Route path="/login" element={<Login socket={socket} />} />
+            <Route path="/lobby" element={<Lobby socket={socket} />} />
+            {/* <Redirect to="/" /> */}
+          </Routes>
       </Router>
     </User.Provider>
   );

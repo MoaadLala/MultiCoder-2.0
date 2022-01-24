@@ -4,6 +4,7 @@ import './Lobby.css';
 import { User } from '../../App';
 import winnerIcon from '../../assets/winnerIcon.svg';
 import loserIcon from '../../assets/loserIcon.svg';
+import AnimatedDiv from '../AnimatedDiv/AnimatedDiv';
 
 export default function Lobby(props) {
     const { user, setUser } = useContext(User);
@@ -191,84 +192,86 @@ export default function Lobby(props) {
     }
     
     return (
-        <div className="lobby">
-            <h2 className="lobbyHeader">Lobby: {roomCode}  <i class="fas fa-circle liveIndicator" style={{display: (playersObj.closed) ? 'block' : 'none'}}></i></h2>
-            <i className="greyish" style={{display: (playersObj.closed) ? 'block' : 'none'}}>some players have already started the game,<br /> you will join on the next round</i>
-            <div className="warning" id="lobbyWarning"></div>
-            <div className="lobbyPlayersContainer">
-                {
-                    (Object.keys(playersObj['winners']).length > 0) ? 
-                    Object.keys(playersObj['winners']).map(key => (
-                        <div className="lobbyPlayer" onClick={() => view(key)}>
-                            <div className="lobbyPlayerDescription">
-                                <img className="winnerColor" src={playersObj['winners'][key].photo} alt="" />
-                                <h4 className="winnerColor">{playersObj['winners'][key].name} {(playersObj['winners'][key].admin) ? (<i class="fas fa-crown"></i>) : null}</h4>
+        <AnimatedDiv>
+            <div className="lobby">
+                <h2 className="lobbyHeader">Lobby: {roomCode}  <i class="fas fa-circle liveIndicator" style={{display: (playersObj.closed) ? 'block' : 'none'}}></i></h2>
+                <i className="greyish" style={{display: (playersObj.closed) ? 'block' : 'none'}}>some players have already started the game,<br /> you will join on the next round</i>
+                <div className="warning" id="lobbyWarning"></div>
+                <div className="lobbyPlayersContainer">
+                    {
+                        (Object.keys(playersObj['winners']).length > 0) ? 
+                        Object.keys(playersObj['winners']).map(key => (
+                            <div className="lobbyPlayer" onClick={() => view(key)}>
+                                <div className="lobbyPlayerDescription">
+                                    <img className="winnerColor" src={playersObj['winners'][key].photo} alt="" />
+                                    <h4 className="winnerColor">{playersObj['winners'][key].name} {(playersObj['winners'][key].admin) ? (<i class="fas fa-crown"></i>) : null}</h4>
+                                </div>
+                                    {
+                                        (user.admin && !playersObj['winners'][key].admin && !playersObj.closed) ? (
+                                            <button onClick={() => kickUser(key)} className="kickBtn"><i class="fas fa-door-open"></i></button>
+                                        ) : null
+                                    }
+                                    <span className="winnerColor">{playersObj['winners'][key].timeScore}</span>
                             </div>
+                        )) : null
+                    }
+                    {
+                        Object.keys(playersObj['players']).map(key => (
+                            <div className="lobbyPlayer" onClick={() => spectate(key)}>
+                                <div className="lobbyPlayerDescription">
+                                    <img src={playersObj['players'][key].photo} alt="" />
+                                    <h4>{playersObj['players'][key].name} {(playersObj['players'][key].admin) ? (<i class="fas fa-crown"></i>) : null}</h4>
+                                </div>
+                                    {
+                                        (user.admin && !playersObj['players'][key].admin && !playersObj.closed) ? (
+                                            <button onClick={() => kickUser(key)} className="kickBtn"><i class="fas fa-door-open"></i></button>
+                                        ) : null
+                                    }
+                            </div>
+                        ))
+                    }
+                    {
+                        Object.keys(playersObj['spectators']).map(key => (
+                            <div className="lobbyPlayer" style={{cursor: 'default'}}>
+                                <div className="lobbyPlayerDescription">
+                                    <img src={playersObj['spectators'][key].photo} alt="" />
+                                    <h4>{playersObj['spectators'][key].name} {(playersObj['spectators'][key].admin) ? (<i class="fas fa-crown"></i>): null}</h4>
+                                </div>
                                 {
-                                    (user.admin && !playersObj['winners'][key].admin && !playersObj.closed) ? (
+                                    (user.admin && !playersObj['spectators'][key].admin && !playersObj.closed) ? (
                                         <button onClick={() => kickUser(key)} className="kickBtn"><i class="fas fa-door-open"></i></button>
                                     ) : null
                                 }
-                                <span className="winnerColor">{playersObj['winners'][key].timeScore}</span>
-                        </div>
-                    )) : null
-                }
-                {
-                    Object.keys(playersObj['players']).map(key => (
-                        <div className="lobbyPlayer" onClick={() => spectate(key)}>
-                            <div className="lobbyPlayerDescription">
-                                <img src={playersObj['players'][key].photo} alt="" />
-                                <h4>{playersObj['players'][key].name} {(playersObj['players'][key].admin) ? (<i class="fas fa-crown"></i>) : null}</h4>
                             </div>
+                        ))
+                    }
+                    {
+                        (user.admin) ? 
+                        Object.keys(playersObj['kicked']).map(key => (
+                            <div className="lobbyPlayer" style={{opacity: .7}}>
+                                <div className="lobbyPlayerDescription">
+                                    <img src={playersObj['kicked'][key].photo} alt="" />
+                                    <h4>{playersObj['kicked'][key].name}</h4>
+                                </div>
                                 {
-                                    (user.admin && !playersObj['players'][key].admin && !playersObj.closed) ? (
-                                        <button onClick={() => kickUser(key)} className="kickBtn"><i class="fas fa-door-open"></i></button>
+                                    (user.admin && !playersObj['kicked'][key].admin) ? (
+                                        <button onClick={() => unban(key)} className="kickBtn"><i class="fas fa-times"></i></button>
                                     ) : null
                                 }
-                        </div>
-                    ))
-                }
-                {
-                    Object.keys(playersObj['spectators']).map(key => (
-                        <div className="lobbyPlayer" style={{cursor: 'default'}}>
-                            <div className="lobbyPlayerDescription">
-                                <img src={playersObj['spectators'][key].photo} alt="" />
-                                <h4>{playersObj['spectators'][key].name} {(playersObj['spectators'][key].admin) ? (<i class="fas fa-crown"></i>): null}</h4>
                             </div>
-                            {
-                                (user.admin && !playersObj['spectators'][key].admin && !playersObj.closed) ? (
-                                    <button onClick={() => kickUser(key)} className="kickBtn"><i class="fas fa-door-open"></i></button>
-                                ) : null
-                            }
-                        </div>
-                    ))
-                }
+                        )) : null
+                    }
+                    <div className="gameNotificationSection" id="lobbyNotificationContainer"></div>
+                </div>
                 {
-                    (user.admin) ? 
-                    Object.keys(playersObj['kicked']).map(key => (
-                        <div className="lobbyPlayer" style={{opacity: .7}}>
-                            <div className="lobbyPlayerDescription">
-                                <img src={playersObj['kicked'][key].photo} alt="" />
-                                <h4>{playersObj['kicked'][key].name}</h4>
-                            </div>
-                            {
-                                (user.admin && !playersObj['kicked'][key].admin) ? (
-                                    <button onClick={() => unban(key)} className="kickBtn"><i class="fas fa-times"></i></button>
-                                ) : null
-                            }
-                        </div>
-                    )) : null
+                    (user.admin && !playersObj.closed) ? (
+                        <button className="flatBtn" onClick={startGame} style={{display: 'block', margin: '1em auto'}}> Start </button>
+                    ) : (user.admin && playersObj.closed && Object.keys(playersObj['players']).length === 0) ? (
+                        <button className="flatBtn" onClick={restartGame} style={{display: 'block', margin: '1em auto'}}> Go Again? </button>
+                    ) : null
                 }
-                <div className="gameNotificationSection" id="lobbyNotificationContainer"></div>
+                <button className="flatBtn" onClick={leaveGame} style={{display: 'block', margin: '1em auto'}}>Leave game</button>
             </div>
-            {
-                (user.admin && !playersObj.closed) ? (
-                    <button className="flatBtn" onClick={startGame} style={{display: 'block', margin: '1em auto'}}> Start </button>
-                ) : (user.admin && playersObj.closed && Object.keys(playersObj['players']).length === 0) ? (
-                    <button className="flatBtn" onClick={restartGame} style={{display: 'block', margin: '1em auto'}}> Go Again? </button>
-                ) : null
-            }
-            <button className="flatBtn" onClick={leaveGame} style={{display: 'block', margin: '1em auto'}}>Leave game</button>
-        </div>
+        </AnimatedDiv>
     )
 }

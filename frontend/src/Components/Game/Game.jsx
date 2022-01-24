@@ -18,6 +18,7 @@ import wrongTestCase from '../../assets/wrongTestCase.svg';
 import correctTestCase from '../../assets/correctTestCase.svg';
 import wrongAnswerIcon from '../../assets/wrongAnswerIcon.svg';
 import finalWinningResultImg from '../../assets/finalWinningResult.svg';
+import AnimatedDiv from '../AnimatedDiv/AnimatedDiv';
 
 
 export default function Game(props) {
@@ -247,122 +248,124 @@ export default function Game(props) {
     console.log(solution.current);
 
     return (
-        <div className="game">
-            <div className="glass" id="glass">
-                <div className="finalWinningResult" id="finalWinningResult">
-                    <h2>Congratulations!</h2>
-                    <img src={finalWinningResultImg} alt="" />
-                    <p>You actually go them all. Am suprised!</p> 
-                    <h1><i class="fas fa-stopwatch"></i>: {timerRef.current}</h1>
-                </div>
-            </div>
-            <div className="gameTopSection">
-                <div className="roomCodeContainer"><b>Room Code:</b> {state.gameCode}</div>
-                <div className="gameTopSectionRightSide">
-                    <span className="timerContainer">{timerRef.current}</span>
-                </div>
-            </div>
-            <div className="gameBoard">
-                <div className="gameLeftSide">
-                    <div className="tabBar">
-                        <div className="tabBarItem tabBarItem-active" id="questionTab" onClick={() => updateTabState('question')}>Question</div>
-                        <div className="tabBarItem" id="consoleTab" onClick={() => updateTabState('console')}>Console</div>
-                        <div className="tabBarItem" id="chatTab" onClick={() => updateTabState('chat')}>Chat</div>
+        <AnimatedDiv>
+            <div className="game">
+                <div className="glass" id="glass">
+                    <div className="finalWinningResult" id="finalWinningResult">
+                        <h2>Congratulations!</h2>
+                        <img src={finalWinningResultImg} alt="" />
+                        <p>You actually go them all. Am suprised!</p> 
+                        <h1><i class="fas fa-stopwatch"></i>: {timerRef.current}</h1>
                     </div>
-                    <div className="tabBarView" id="question" style={{display: (activeTab === 'question') ? 'block' : 'none'}}>
-                        <div className="questionHeading">
-                            <h2 className="title">{state.question.title}</h2>
-                            <p className="author"><a href={state.question.accountLink} target="_blank">By: {state.question.madeBy}</a></p>
-                        </div>
-                        <div className="questionDescription">
-                            {state.question.description}
-                            {
-                                ('examples' in state.question) ? (
-                                    state.question.examples.map(val => (
-                                        <div className="codeBlock">
-                                            <p>Input: {val.input}</p>
-                                            <p>Output: {val.output}</p>
-                                        </div>
-                                    ))
-                                ) : null
-                            }
-                        </div>
+                </div>
+                <div className="gameTopSection">
+                    <div className="roomCodeContainer"><b>Room Code:</b> {state.gameCode}</div>
+                    <div className="gameTopSectionRightSide">
+                        <span className="timerContainer">{timerRef.current}</span>
                     </div>
-                    <div className="tabBarView" id="console" style={{display: (activeTab === 'console') ? 'block' : 'none'}}>
-                        {
-                            state.question.testCases.map((val, index) => (
-                                <div className="testCaseContainer" id={`testCaseNum${index}`} onClick={(val.isOpen) ? () => showTestCase(index) : null} >
-                                    <div className="testCase">
-                                        <div className="testCaseLeftSide">
-                                            <img id={`testCaseIconNum${index}`} src={testCaseIcon} alt=""/>
-                                            <div>
-                                                <h4>Test Case</h4>
-                                                <p className="greyish">{(val.isOpen) ? 'Open' : 'Closed'}</p>
-                                            </div>
-                                        </div>
-                                        <i class="fas fa-angle-down"></i>
-                                    </div>
-                                    <div className="testCaseContent">
-                                        <h5>Input: {val.input}</h5>
-                                        <h5>Expected Output: {val.expectedOutput}</h5>
-                                    </div>
-                                </div>
-                            ))
-                        }
-                        <div className="gameNotificationSection" id="consoleNotificationContainer">
-                            <img src={wrongAnswerIcon} alt="" />
-                            <div>
-                                <h4>Idiot :(</h4>
-                                <p className="greyish">We're telling everyone</p>
+                </div>
+                <div className="gameBoard">
+                    <div className="gameLeftSide">
+                        <div className="tabBar">
+                            <div className="tabBarItem tabBarItem-active" id="questionTab" onClick={() => updateTabState('question')}>Question</div>
+                            <div className="tabBarItem" id="consoleTab" onClick={() => updateTabState('console')}>Console</div>
+                            <div className="tabBarItem" id="chatTab" onClick={() => updateTabState('chat')}>Chat</div>
+                        </div>
+                        <div className="tabBarView" id="question" style={{display: (activeTab === 'question') ? 'block' : 'none'}}>
+                            <div className="questionHeading">
+                                <h2 className="title">{state.question.title}</h2>
+                                <p className="author"><a href={state.question.accountLink} target="_blank">By: {state.question.madeBy}</a></p>
                             </div>
-                        </div>
-                    </div>
-                    <div className="tabBarView" id="chat" style={{display: (activeTab === 'chat') ? 'flex' : 'none'}}>
-                        <div className="chatContainer">
-                            <div className="messagesContainer">
+                            <div className="questionDescription">
+                                {state.question.description}
                                 {
-                                    messages.map(val => (
-                                        <div className="messageContainer">
-                                            <img src={val.image} alt="" />
-                                            <div>
-                                                <h5 className="greyish">{val.name}</h5>
-                                                <p>{val.message}</p>
+                                    ('examples' in state.question) ? (
+                                        state.question.examples.map(val => (
+                                            <div className="codeBlock">
+                                                <p>Input: {val.input}</p>
+                                                <p>Output: {val.output}</p>
                                             </div>
-                                        </div>
-                                    ))
+                                        ))
+                                    ) : null
                                 }
-
                             </div>
-                            <ButtonedInputBox inputId="messageInput" bgColor="var(--main-grey)" placeholder="Put Your Message Here..." btnValue={<i class="fas fa-paper-plane"></i>} btnFunction='sendMessage' socket={socket} gameCode={state.gameCode}/>
+                        </div>
+                        <div className="tabBarView" id="console" style={{display: (activeTab === 'console') ? 'block' : 'none'}}>
+                            {
+                                state.question.testCases.map((val, index) => (
+                                    <div className="testCaseContainer" id={`testCaseNum${index}`} onClick={(val.isOpen) ? () => showTestCase(index) : null} >
+                                        <div className="testCase">
+                                            <div className="testCaseLeftSide">
+                                                <img id={`testCaseIconNum${index}`} src={testCaseIcon} alt=""/>
+                                                <div>
+                                                    <h4>Test Case</h4>
+                                                    <p className="greyish">{(val.isOpen) ? 'Open' : 'Closed'}</p>
+                                                </div>
+                                            </div>
+                                            <i class="fas fa-angle-down"></i>
+                                        </div>
+                                        <div className="testCaseContent">
+                                            <h5>Input: {val.input}</h5>
+                                            <h5>Expected Output: {val.expectedOutput}</h5>
+                                        </div>
+                                    </div>
+                                ))
+                            }
+                            <div className="gameNotificationSection" id="consoleNotificationContainer">
+                                <img src={wrongAnswerIcon} alt="" />
+                                <div>
+                                    <h4>Idiot :(</h4>
+                                    <p className="greyish">We're telling everyone</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="tabBarView" id="chat" style={{display: (activeTab === 'chat') ? 'flex' : 'none'}}>
+                            <div className="chatContainer">
+                                <div className="messagesContainer">
+                                    {
+                                        messages.map(val => (
+                                            <div className="messageContainer">
+                                                <img src={val.image} alt="" />
+                                                <div>
+                                                    <h5 className="greyish">{val.name}</h5>
+                                                    <p>{val.message}</p>
+                                                </div>
+                                            </div>
+                                        ))
+                                    }
+
+                                </div>
+                                <ButtonedInputBox inputId="messageInput" bgColor="var(--main-grey)" placeholder="Put Your Message Here..." btnValue={<i class="fas fa-paper-plane"></i>} btnFunction='sendMessage' socket={socket} gameCode={state.gameCode}/>
+                            </div>
                         </div>
                     </div>
+                    <div className="gameRightSide">
+                    <AceEditor
+                        mode="javascript"
+                        theme="monokai"
+                        name="editor"
+                        value={(state.isView) ? state.code : (state.isSpectator) ? spectatorSolution : solution.current}
+                        editorProps={{ $blockScrolling: true }}
+                        focus={true}
+                        enableBasicAutocompletion={true}
+                        enableLiveAutocompletion={true}
+                        enableSnippets={true}
+                        width="100%"
+                        fontSize={16}
+                        onChange={changeHandler}
+                        readOnly={(state.isSpectator || state.isView) ? true : false}
+                        // placeholder="You deleted the test functions, you sortof need that for the testcases to work, just do a quick restart or something.."
+                    />
+                    </div>
                 </div>
-                <div className="gameRightSide">
-                <AceEditor
-                    mode="javascript"
-                    theme="monokai"
-                    name="editor"
-                    value={(state.isView) ? state.code : (state.isSpectator) ? spectatorSolution : solution.current}
-                    editorProps={{ $blockScrolling: true }}
-                    focus={true}
-                    enableBasicAutocompletion={true}
-                    enableLiveAutocompletion={true}
-                    enableSnippets={true}
-                    width="100%"
-                    fontSize={16}
-                    onChange={changeHandler}
-                    readOnly={(state.isSpectator || state.isView) ? true : false}
-                    // placeholder="You deleted the test functions, you sortof need that for the testcases to work, just do a quick restart or something.."
-                />
+                <div className="gameBottomSection">
+                    <div className="gameNotificationSection" id="gamePageNotificationContainer"></div>
+                    <div className="gameActionBtns" style={{display: (state.isSpectator || state.isView ? 'none' : 'block')}}>
+                        <button className="flatBtn--clicked">Btn</button>
+                        <button className="flatBtn" style={{marginLeft: '1em'}} onClick={submitCode}>Submit</button>
+                    </div>
                 </div>
             </div>
-            <div className="gameBottomSection">
-                <div className="gameNotificationSection" id="gamePageNotificationContainer"></div>
-                <div className="gameActionBtns" style={{display: (state.isSpectator || state.isView ? 'none' : 'block')}}>
-                    <button className="flatBtn--clicked">Btn</button>
-                    <button className="flatBtn" style={{marginLeft: '1em'}} onClick={submitCode}>Submit</button>
-                </div>
-            </div>
-        </div>
+        </AnimatedDiv>
     )
 }

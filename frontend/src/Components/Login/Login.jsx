@@ -2,6 +2,7 @@ import './Login.css';
 import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, GithubAuthProvider } from 'firebase/auth';
 import { useContext } from 'react';
 import { User } from '../../App';
+import AnimatedDiv from '../AnimatedDiv/AnimatedDiv';
 
 export default function Login(props) {
     const {user, setUser} = useContext(User);
@@ -67,16 +68,18 @@ export default function Login(props) {
     }
 
     return (
-        <div className="Login">
-            <div className="loginHeaders">
-                <h1>Welcome to MultiCoder</h1>
-                <p className="greyish">Login and start kicking!</p>
+        <AnimatedDiv>
+            <div className="Login">
+                <div className="loginHeaders">
+                    <h1>Welcome to MultiCoder</h1>
+                    <p className="greyish">Login and start kicking!</p>
+                </div>
+                <div className="loginBtns">
+                    <button onClick={googleAuth} className="loginBtn--google"><i class="fab fa-google"></i>Google</button>
+                    <button onClick={facebookAuth} className="loginBtn--facebook"><i class="fab fa-facebook"></i>Facebook</button>
+                    <button onClick={githubAuth} className="loginBtn--github"><i class="fab fa-github"></i>Github</button>
+                </div>
             </div>
-            <div className="loginBtns">
-                <button onClick={googleAuth} className="loginBtn--google"><i class="fab fa-google"></i>Google</button>
-                <button onClick={facebookAuth} className="loginBtn--facebook"><i class="fab fa-facebook"></i>Facebook</button>
-                <button onClick={githubAuth} className="loginBtn--github"><i class="fab fa-github"></i>Github</button>
-            </div>
-        </div>
+        </AnimatedDiv>
     )
 }

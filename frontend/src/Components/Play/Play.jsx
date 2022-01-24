@@ -5,6 +5,7 @@ import friendsFamily from '../../assets/friends&family.png';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useContext, useState, useEffect } from 'react';
 import { User } from '../../App';
+import AnimatedDiv from '../AnimatedDiv/AnimatedDiv';
 
 export default function Play(props) {
     const {user, setUser} = useContext(User);
@@ -131,48 +132,50 @@ export default function Play(props) {
     }, [])
 
     return (
-        <div className="play">
-            <h1>Welcome to the Arena</h1>
-            <p className="greyish">Choose your way of joining</p>
-            <div className="warning" id="playWarning"></div>
-            <div className="playJoinWays">
-                <div className="joinWay" onClick={showCreateRoom}>
-                    <img src={createRoom} alt="" />
-                    <h3>Create a Room</h3>
-                    <p className="greyish">
-                        Be the boss, choose the game mode, and
-                        orginaze the whole thing
-                    </p>
-                </div>
-                <div className="joinWay" onClick={showJoinRoom}>
-                    <img src={joinRoom} alt="" />
-                    <h3>Join a Room</h3>
-                    <p className="greyish">
-                        let the boring stuff to the boring people,
-                        copy, paste, and let’s goo! 
-                    </p>
-                </div>
-            </div>
-            <div className="createARoom">
-                <div className="gameMode" onClick={initFriendsAndFamilyGame}>
-                    <img src={friendsFamily} alt="" />
-                    <div>
-                        <h3>Friends & Family</h3>
-                        <p className="greyish">As Many As You  Like! (20 Tops)</p>
+        <AnimatedDiv>
+            <div className="play">
+                <h1>Welcome to the Arena</h1>
+                <p className="greyish">Choose your way of joining</p>
+                <div className="warning" id="playWarning"></div>
+                <div className="playJoinWays">
+                    <div className="joinWay" onClick={showCreateRoom}>
+                        <img src={createRoom} alt="" />
+                        <h3>Create a Room</h3>
+                        <p className="greyish">
+                            Be the boss, choose the game mode, and
+                            orginaze the whole thing
+                        </p>
+                    </div>
+                    <div className="joinWay" onClick={showJoinRoom}>
+                        <img src={joinRoom} alt="" />
+                        <h3>Join a Room</h3>
+                        <p className="greyish">
+                            let the boring stuff to the boring people,
+                            copy, paste, and let’s goo! 
+                        </p>
                     </div>
                 </div>
-                <button className="flatBtn" onClick={hideCreateARoom}>Back</button>
-            </div>
-            <div className="joinARoomContainer">
-                <div className="joinARoom">
-                    <button className="closeJoinARoom" onClick={hideJoinARoom}><i class="fas fa-times"></i></button>
-                    <h3>Enter the room's code:</h3>
-                    <div className="inputBox">
-                        <input type="text" placeholder="XXXXX-XXXXX-XXXXX" onChange={(e) => setJoinCode(e.target.value)}/>
+                <div className="createARoom">
+                    <div className="gameMode" onClick={initFriendsAndFamilyGame}>
+                        <img src={friendsFamily} alt="" />
+                        <div>
+                            <h3>Friends & Family</h3>
+                            <p className="greyish">As Many As You  Like! (20 Tops)</p>
+                        </div>
                     </div>
-                    <button className="flatBtn" onClick={joinARoom}>Join</button>
+                    <button className="flatBtn" onClick={hideCreateARoom}>Back</button>
+                </div>
+                <div className="joinARoomContainer">
+                    <div className="joinARoom">
+                        <button className="closeJoinARoom" onClick={hideJoinARoom}><i class="fas fa-times"></i></button>
+                        <h3>Enter the room's code:</h3>
+                        <div className="inputBox">
+                            <input type="text" placeholder="XXXXX-XXXXX-XXXXX" onChange={(e) => setJoinCode(e.target.value)}/>
+                        </div>
+                        <button className="flatBtn" onClick={joinARoom}>Join</button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </AnimatedDiv>
     )
 }
