@@ -22,17 +22,43 @@ import AnimatedDiv from '../AnimatedDiv/AnimatedDiv';
 
 
 export default function Game(props) {
+
+    const paramsConstructure = arr => {
+        let params = arr;
+        console.log("Construction Function Input");
+        console.log(params);
+        let result = '';
+        for (let i=0;i<params.length;i++) {
+            if (i !== params.length - 1) {
+                if (typeof params[i] == "object") {
+                    result += `${JSON.stringify(params[i])}, `;
+                } else {
+                    result += `${params[i]}, `;
+                }
+            } else {
+                if (typeof params[i] == "object") {
+                    result += `${JSON.stringify(params[i])}`;
+                } else {
+                    result += params[i];
+                }
+            }
+        }
+        console.log("Construction Function output: ");
+        console.log(JSON.stringify(result));
+        return result;
+    }
+
     const socket = props.socket;
     const { state } = useLocation();
     const [activeTab, setActiveTab] = useState('question');
     const [messages, setMessages] = useState([]);
     const [timerId, setTimerId] = useState();
-    const solution = useRef(state.question.starterCode);
-    const [spectatorSolution, setSpectatorSolution] = useState(state.question.starterCode);
+    let parameters = paramsConstructure(Object.keys(state.question.testCases[0].input));
+    const solution = useRef(`function ${state.question.functionName}(${parameters}) {}`);
+    const [spectatorSolution, setSpectatorSolution] = useState(`function ${state.question.functionName}(${parameters}) {}`);
     const { user, setUser } = useContext(User);
     const timerRef = useRef((state.isSpectator) ? state.timer : 0);
     const navigate = useNavigate();
-
     
     useEffect(() => {
         console.log(state.question);
@@ -141,20 +167,84 @@ export default function Game(props) {
         a.every((val, index) => val === b[index]);
     }
 
+    const mapComparison = (obj1, obj2) => {
+        let equal = true;
+        if (Object.keys(obj1).length !== Object.keys(obj2).length) {
+            equal = false;
+        }
+        
+        for (let key of Object.keys(obj1)) {
+            if (obj2[key] === undefined) {
+            equal = false;
+            } else if (obj2[key] !== obj1[key]) {
+            equal = false;
+            }
+        }
+        
+        return equal;
+    }
+
     const submitCode = () => {
         let result = true;
         state.question.testCases.forEach((val, index) => {
             updateTestCaseWithRunning(index);
-            let test = solution.current + `\nsortArr([${val.input}]);`;
-            //This eval call must change, preferable with an RCE
+            // if (state.question.dataType == "Array") {
+            //     let test = solution.current + `\n${state.question.functionName}([${val.input}]);`;
+            //     //This eval call must change, preferable with an RCE
+            //     let answer = eval(test);
+            //     if (!arrayComparison(answer, val.expectedOutput)) {
+            //         // Not an AC on this test case.
+            //         result = false;
+            //         updateTestCaseWithWrongAnswer(index);
+            //     } else {
+            //         // Everything is good with this test case
+            //         updateTestCaseWithCorrectAnswer(index);
+            //     }
+            // } else if (state.question.dataType == "Number") {
+            //     let test = solution.current + `\n${state.question.functionName}(${val.input});`;
+            //     //This eval call must change, preferable with an RCE
+            //     let answer = eval(test);
+            //     if (answer !== val.expectedOutput) {
+            //         result = false;
+            //         updateTestCaseWithWrongAnswer(index);
+            //     } else {
+            //         updateTestCaseWithCorrectAnswer(index);
+            //     }
+            // }
+            let test = solution.current + `\n${state.question.functionName}(${paramsConstructure(Object.values(val.input))});`;
+            console.log("Full Solution: ");
+            console.log(test);
+            // this eval call must change, preferable with an RCE
             let answer = eval(test);
-            if (state.question.dataType == "Array") {
+            console.log("Full Solution Evaluation: ");
+            console.log(answer);
+            console.log("Full solution Evaluation output datatype: ")
+            console.log(typeof answer);
+            console.log("Expected Output: ");
+            console.log(val.expectedOutput);
+            console.log("Expected Output DataType: ");
+            console.log(typeof val.expectedOutput);
+            if (state.question.dataType === "Array") {
                 if (!arrayComparison(answer, val.expectedOutput)) {
                     // Not an AC on this test case.
                     result = false;
                     updateTestCaseWithWrongAnswer(index);
                 } else {
                     // Everything is good with this test case
+                    updateTestCaseWithCorrectAnswer(index);
+                }
+            } else if (state.question.dataType === "Map") {
+                if (!mapComparison(answer, val.expectedOutput)) {
+                    result = false;
+                    updateTestCaseWithWrongAnswer(index);
+                } else {
+                    updateTestCaseWithCorrectAnswer(index);
+                }
+            } else { // Number, String, or Bool
+                if (answer !== val.expectedOutput) {
+                    result = false;
+                    updateTestCaseWithWrongAnswer(index);
+                } else {
                     updateTestCaseWithCorrectAnswer(index);
                 }
             }
@@ -274,7 +364,7 @@ export default function Game(props) {
                         <div className="tabBarView" id="question" style={{display: (activeTab === 'question') ? 'block' : 'none'}}>
                             <div className="questionHeading">
                                 <h2 className="title">{state.question.title}</h2>
-                                <p className="author"><a href={state.question.accountLink} target="_blank">By: {state.question.madeBy}</a></p>
+                                <p className="author"><a href="#" target="_blank">By: {state.question.madeBy}</a></p>
                             </div>
                             <div className="questionDescription">
                                 {state.question.description}
@@ -305,8 +395,10 @@ export default function Game(props) {
                                             <i class="fas fa-angle-down"></i>
                                         </div>
                                         <div className="testCaseContent">
-                                            <h5>Input: {val.input}</h5>
-                                            <h5>Expected Output: {val.expectedOutput}</h5>
+                                            <h5>Input: {Object.keys(val.input).map(key => (
+                                                <> <b>{key}: </b> {val.input[key]} </>
+                                            ))}</h5>
+                                            <h5>Output: {JSON.stringify(val.expectedOutput)}</h5>
                                         </div>
                                     </div>
                                 ))
