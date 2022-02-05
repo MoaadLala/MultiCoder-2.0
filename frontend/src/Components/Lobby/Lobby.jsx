@@ -5,6 +5,7 @@ import { User } from '../../App';
 import winnerIcon from '../../assets/winnerIcon.svg';
 import loserIcon from '../../assets/loserIcon.svg';
 import AnimatedDiv from '../AnimatedDiv/AnimatedDiv';
+import profilePic from '../../assets/profilePic.jpeg';
 
 export default function Lobby(props) {
     const { user, setUser } = useContext(User);
@@ -102,11 +103,35 @@ export default function Lobby(props) {
 
         socket.on('newAdmin', () => {
             setUser({
-                name: user.displayName,
+                name: user.name,
                 email: user.email,
-                photo: user.photoURL,
+                photo: user.photo,
                 admin: true,
             });
+        });
+
+        socket.on('updatedEmoji', (data) => {
+            // data[0]: emoji
+            // data[1]: userId
+            // data[2]: room Object
+
+            console.log(`Emoji: ${data[0]}`);
+
+            const room = JSON.parse(data[2]);
+
+            console.log(`The Player id: ${data[1]}`);
+            const emojiSpan = document.getElementById(`lobbyPlayerEmojiNum${data[1]}`);
+            console.log(emojiSpan);
+            emojiSpan.classList.add('biggerEmoji');
+            setTimeout(() => {
+                emojiSpan.classList.remove('biggerEmoji');
+                emojiSpan.innerText = data[0];
+                emojiSpan.classList.add('smallerEmoji'); 
+                setTimeout(() => {
+                    emojiSpan.classList.remove('smallerEmoji'); 
+                    setPlayersObj(room);
+                }, 150);
+            }, 150);
         });
 
         setIsLoading(false);
@@ -119,6 +144,7 @@ export default function Lobby(props) {
             socket.off('friendsAndFamilyWinnerNotify');
             socket.off('friendsAndFamilyLoserNotify');
             socket.off('newAdmin');
+            socket.off('updatedEmoji');
         }
     }, []);
 
@@ -163,6 +189,12 @@ export default function Lobby(props) {
     const leaveGame = () => {
         socket.emit('leaveRoom', [roomCode, false]);
         navigate('/play', {state: { kicked: false }});
+        setUser({
+            name: user.name,
+            email: user.email,
+            photo: user.photo,
+            admin: false,
+        });
     }
 
     const spectate = key => {
@@ -183,6 +215,16 @@ export default function Lobby(props) {
         });
     }
 
+    const updateEmojiState = (emoji, id) => {
+        socket.emit('updateEmojiState', [emoji, roomCode]);
+        const btnEmoji = document.getElementById(id);
+        console.log(btnEmoji);
+        btnEmoji.classList.add('shaking');
+        setTimeout(() => {
+            btnEmoji.classList.remove('shaking');
+        }, 350);
+    }
+
     console.log(playersObj);
 
     if (isLoading) {
@@ -193,7 +235,7 @@ export default function Lobby(props) {
     
     return (
         <AnimatedDiv>
-            <div className="lobby">
+            {/* <div className="lobby">
                 <h2 className="lobbyHeader">Lobby: {roomCode}  <i class="fas fa-circle liveIndicator" style={{display: (playersObj.closed) ? 'block' : 'none'}}></i></h2>
                 <i className="greyish" style={{display: (playersObj.closed) ? 'block' : 'none'}}>some players have already started the game,<br /> you will join on the next round</i>
                 <div className="warning" id="lobbyWarning"></div>
@@ -271,6 +313,102 @@ export default function Lobby(props) {
                     ) : null
                 }
                 <button className="flatBtn" onClick={leaveGame} style={{display: 'block', margin: '1em auto'}}>Leave game</button>
+            </div> */}
+            <div className="lobby">
+                <div className="lobbyContainer">
+                    <h1 className="lobbyHeader">☕ Lobby: {roomCode}  <i class="fas fa-circle liveIndicator" style={{display: (playersObj.closed) ? 'block' : 'none'}}></i></h1>               
+                    {
+                        (user.admin && !playersObj.closed) ? (
+                            <button className="flatBtn" onClick={startGame} style={{display: 'block', margin: '1em auto'}}> Start </button>
+                        ) : (user.admin && playersObj.closed && Object.keys(playersObj['players']).length === 0) ? (
+                            <button className="flatBtn" onClick={restartGame} style={{display: 'block', margin: '1em auto'}}> Go Again? </button>
+                        ) : null
+                    }
+                    <i className="greyish" style={{display: (playersObj.closed) ? 'block' : 'none'}}>some players have already started the game,<br /> you will join on the next round</i>
+                    <div className="warning" id="lobbyWarning"></div>
+                    <div className="lobbyPlayersContainer">
+                        {
+                            (Object.keys(playersObj['winners']).length > 0) ? 
+                            Object.keys(playersObj['winners']).map(key => (
+                                <div className="lobbyPlayer" onClick={() => view(key)}>
+                                    <div className="lobbyPlayerImgContainer">
+                                        <img className="winnerColor" src={playersObj['winners'][key].photo} alt=""/>
+                                        {
+                                            (user.admin && !playersObj['winners'][key].admin && !playersObj.closed) ? (
+                                                <div className="lobbyPlayerKickBtn" onClick={() => kickUser(key)}>
+                                                    <i class="fas fa-door-open"></i>
+                                                </div>
+                                            ) : null
+                                        }
+                                        
+                                        <div className="lobbyPlayerEmojiContainer">
+                                            <span className="lobbyPlayerEmoji" id={`lobbyPlayerEmojiNum${key}`}>{playersObj['winners'][key].emoji}</span>
+                                        </div>
+                                    </div>
+                                    <h4 className="winnerColor">{playersObj['winners'][key].name} {(playersObj['winners'][key].admin) ? (<i class="fas fa-crown"></i>) : null} <br /> <span className="winnerColor">{playersObj['winners'][key].timeScore}</span> </h4>
+                                </div>
+                            )) : null
+                        }
+                        {
+                            Object.keys(playersObj['players']).map(key => (
+                                <div className="lobbyPlayer" onClick={() => spectate(key)}>
+                                    <div className="lobbyPlayerImgContainer">
+                                        <img src={playersObj['players'][key].photo} alt=""/>
+                                        {
+                                            (user.admin && !playersObj['players'][key].admin && !playersObj.closed) ? (
+                                                <div className="lobbyPlayerKickBtn" onClick={() => kickUser(key)}>
+                                                    <i class="fas fa-door-open"></i>
+                                                </div>
+                                            ) : null
+                                        }
+                                        
+                                        <div className="lobbyPlayerEmojiContainer">
+                                            <span className="lobbyPlayerEmoji" id={`lobbyPlayerEmojiNum${key}`}>{playersObj['players'][key].emoji}</span>
+                                        </div>
+                                    </div>
+                                    <h4>{playersObj['players'][key].name} {(playersObj['players'][key].admin) ? (<i class="fas fa-crown"></i>) : null}</h4>
+                                </div>
+                            ))
+                        }
+                        {
+                            Object.keys(playersObj['spectators']).map(key => (
+                                <div className="lobbyPlayer" style={{cursor: 'default', opacity: '.6'}}>
+                                    <div className="lobbyPlayerImgContainer">
+                                        <img src={playersObj['spectators'][key].photo} alt=""/>
+                                        {
+                                            (user.admin && !playersObj['spectators'][key].admin && !playersObj.closed) ? (
+                                                <div className="lobbyPlayerKickBtn" onClick={() => kickUser(key)}>
+                                                    <i class="fas fa-door-open"></i>
+                                                </div>
+                                            ) : null
+                                        }
+                                        
+                                        <div className="lobbyPlayerEmojiContainer">
+                                            <span className="lobbyPlayerEmoji" id={`lobbyPlayerEmojiNum${key}`}>{playersObj['spectators'][key].emoji}</span>
+                                        </div>
+                                    </div>
+                                    <h4>{playersObj['spectators'][key].name} {(playersObj['spectators'][key].admin) ? (<i class="fas fa-crown"></i>) : null} <br /></h4>
+                                </div>
+                            ))
+                        }   
+                        {/* Add the kicked thing */}
+                    </div>
+                    <div className="gameNotificationSection" id="lobbyNotificationContainer"></div>
+                </div>    
+                <div className="lobbyBottomTray">
+                    <div className="lobbyBottomTrayLeftSide">
+                        <button className="emojiBtn" onClick={(e) => updateEmojiState('💩', 'emojiBtnNum1')} ><div id="emojiBtnNum1">💩</div></button>
+                        <button className="emojiBtn" onClick={(e) => updateEmojiState('🚀', 'emojiBtnNum2')} ><div id="emojiBtnNum2">🚀</div></button>
+                        <button className="emojiBtn" onClick={(e) => updateEmojiState('🔥', 'emojiBtnNum3')} ><div id="emojiBtnNum3">🔥</div></button>
+                        <button className="emojiBtn" onClick={(e) => updateEmojiState('💤', 'emojiBtnNum4')} ><div id="emojiBtnNum4">💤</div></button>
+                        <button className="emojiBtn" onClick={(e) => updateEmojiState('✌', 'emojiBtnNum5')} ><div id="emojiBtnNum5">✌</div></button>
+                        <button className="emojiBtn" onClick={(e) => updateEmojiState('🤘', 'emojiBtnNum6')} ><div id="emojiBtnNum6">🤘</div></button>
+                        <button className="emojiBtn" onClick={(e) => updateEmojiState('👏', 'emojiBtnNum7')} ><div id="emojiBtnNum7">👏</div></button>
+                    </div>
+                    <div className="lobbyBottomTrayRightSide">
+                        <button className="flatBtn" onClick={leaveGame}>Leave</button>
+                    </div>
+                </div>
             </div>
         </AnimatedDiv>
     )

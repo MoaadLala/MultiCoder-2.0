@@ -98,9 +98,9 @@ export default function Game(props) {
 
         socket.on('newAdmin', () => {
             setUser({
-                name: user.displayName,
+                name: user.name,
                 email: user.email,
-                photo: user.photoURL,
+                photo: user.photo,
                 admin: true,
             });
         });
@@ -171,15 +171,16 @@ export default function Game(props) {
         let equal = true;
         if (Object.keys(obj1).length !== Object.keys(obj2).length) {
             equal = false;
-        }
-        
-        for (let key of Object.keys(obj1)) {
-            if (obj2[key] === undefined) {
-            equal = false;
-            } else if (obj2[key] !== obj1[key]) {
-            equal = false;
+        } else {
+            for (let key of Object.keys(obj1)) {
+                if (obj2[key] === undefined) {
+                equal = false;
+                } else if (obj2[key] !== obj1[key]) {
+                equal = false;
+                }
             }
         }
+        
         
         return equal;
     }

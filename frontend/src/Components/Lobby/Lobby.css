@@ -1,6 +1,13 @@
+.lobbyContainer {
+    height: calc(100vh - 180px);
+    overflow-y: scroll;
+}
+
 .lobbyPlayersContainer {
-    width: 400px;
-    margin: 1em auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 
 .lobbyHeader {
@@ -10,50 +17,89 @@
 }
 
 .lobbyPlayer {
+    margin: 1em;
+}
+
+.lobbyPlayer img {
+    border-radius: 2em;
+    height: 140px;
+    width: 140px;
+}
+
+.lobbyPlayerImgContainer {
+    height: 150px;
+    width: 150px;
+    position: relative;
+}
+
+.lobbyPlayerKickBtn, .lobbyPlayerEmojiContainer {
+    background-color: var(--main-grey);
+    position: absolute;
+    padding: .5em;
+    font-size: 1.2em;
+    border-radius: 6px;
+    text-align: center;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    border-bottom: 2px solid rgba(0,0,0,0.3);
-    padding: .6em;
-    cursor: pointer;
-}
-
-.lobbyPlayer:last-child {
-    border: none;
-}
-
-.lobbyPlayerDescription {
-    display: flex;
-    align-items: flex-end;
     justify-content: center;
 }
 
-.lobbyPlayerDescription img {
-    width: 50px;
-    height: 50px;
+.lobbyPlayerKickBtn {
+    bottom: 0;
+    right: 0;
+}
+
+.lobbyPlayerEmojiContainer {
+    bottom: 0;
+    left: 0;
+}
+
+.lobbyBottomTray {
+    position: absolute;
+    background-color: var(--main-grey);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    margin: 1em;
     border-radius: 5px;
-    margin-right: .5em;
+    display: grid;
+    align-items: center;
+    grid-template-columns: calc(100% - 120px) 60px;
 }
 
-.kickBtn {
-    color: white;
-    background-color: transparent;
+.lobbyBottomTrayLeftSide, .lobbyBottomTrayRightSide {
+    margin: 1em;
+}
+
+.lobbyBottomTrayLeftSide {
+    display: flex;
+    flex-wrap: nowrap;
+    grid-column: 1/2;
+    margin-right: auto;
+    overflow-x: auto;
+    margin-right: 1em;
+}
+
+.lobbyBottomTrayRightSide {
+    grid-column: 2/3;
+}
+
+.lobbyBottomTrayRightSide button {
+    margin: .2em;
+}
+
+.emojiBtn {
+    background-color: #4F5153;
+    padding: .6em;
+    margin: .5em;
+    font-size: 1.3em;
     border: none;
-    outline: none;
-    font-size: 2em;
+    border-radius: 12px;
     cursor: pointer;
-}
-
-.liveIndicator {
-    color: #8a0000;
-    animation: liveFlash 1s infinite alternate-reverse;
-    font-size: .8em;
-    margin-left: .4em;
-}
-
-.winnerTimeScore {
-    font-weight: bold;
+    position: relative;
 }
 
 .lobbyPlayersContainer .gameNotificationSection {
@@ -66,7 +112,6 @@
 
 img.winnerColor {
     border: 4px solid #528a08;
-    border-radius: 4px;
 }
 
 
@@ -88,4 +133,109 @@ img.winnerColor {
     100% {
         color: #ed0202;
     }
+}
+
+@media only screen and (max-width: 780px) {
+    .emojiBtn {
+        padding: .6em;
+        margin: .5em;
+        font-size: 1.1em;
+        border: none;
+        border-radius: 9px;
+    }
+}
+
+@media only screen and (max-width: 488px) {
+    .lobbyBottomTray {
+        height: 120px;
+        border-radius: 5px;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+        padding-top: .7em;
+    }
+
+    .lobbyBottomTrayLeftSide {
+        grid-column: 1/2;
+        grid-row: 1/2;
+    }
+
+    .lobbyBottomTrayLeftSide::-webkit-scrollbar {
+        display: none;
+    }
+
+    .lobbyBottomTrayRightSide {
+        grid-column: 1/2;
+        grid-row: 2/3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lobbyBottomTrayRightSide button {
+        width: 100%;
+        margin: 0 1em;
+    }
+
+    .lobbyContainer {
+        height: calc(100vh - 230px);
+    }
+}
+
+@keyframes biggerEmoji {
+    0% {
+        font-size: 1.2em;
+    }
+    
+    100% {
+        font-size: 1.8em;
+    }
+}
+
+.biggerEmoji {
+    animation: biggerEmoji 150ms ease-in-out;
+}
+
+@keyframes smallerEmoji {
+    0% {
+        font-size: 1.8em;
+    }
+
+    100% {
+        font-size: 1.2em;
+    }
+}
+
+.smallerEmoji {
+    animation: smallerEmoji 150ms ease-in-out;
+}
+
+@keyframes shaking {
+    0% {
+        transform: none;
+    }
+
+    20% {
+        transform: rotate(20deg);
+    } 
+    
+    40% {
+        transform: rotate(-20deg);
+    }
+
+    60% {
+        transform: rotate(20deg);
+    }
+
+    80% {
+        transform: rotate(-20deg);
+    }
+
+    100% {
+        transform: none;
+    }
+}
+
+.shaking {
+    animation: shaking 350ms ease-in-out;
 }

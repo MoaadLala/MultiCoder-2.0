@@ -43,7 +43,13 @@ const userLeave = (roomCode, id) => {
         delete rooms[roomCode];
     } else if (room['players'][id]) {
         if (room['players'][id].admin) {
-            room['players'][Object.keys(rooms[data[0]]['players'])[1]].admin = true;
+            if (room['players'][Object.keys(rooms[roomCode]['players'])[1]]) {
+                room['players'][Object.keys(rooms[roomCode]['players'])[1]].admin = true;
+            } else if (rooms['winners'][Object.keys(rooms[roomCode]['winners'][1])]) {
+                room['winners'][Object.keys(rooms[roomCode]['winners'])[1]].admin = true;
+            } else {
+                room['spectators'][Object.keys(rooms[roomCode]['spectators'])[1]].admin = true;
+            }
             io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(room)]);
             delete room['players'][id];
             io.to(Object.keys(room['players'])[0]).emit('newAdmin');
@@ -53,7 +59,13 @@ const userLeave = (roomCode, id) => {
         }
     } else if (room['spectators'][id]) {
         if (room['spectators'][id].admin) {
-            room['spectators'][Object.keys(rooms[data[0]]['spectators'])[1]].admin = true;
+            if (rooms['players'][Object.keys(rooms[roomCode]['players'][1])]) {
+                room['players'][Object.keys(rooms[roomCode]['players'])[1]].admin = true;
+            } else if (rooms['winners'][Object.keys(rooms[roomCode]['winners'][1])]) {
+                room['winners'][Object.keys(rooms[roomCode]['winners'])[1]].admin = true;
+            } else {
+                room['spectators'][Object.keys(rooms[roomCode]['spectators'])[1]].admin = true;
+            }
             io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(room)]);
             delete room['spectators'][id];
             console.log(JSON.stringify(rooms));
@@ -63,12 +75,18 @@ const userLeave = (roomCode, id) => {
         }
     } else {
         if (room['winners'][id].admin) {
-            room['winners'][Object.keys(room['winners'])[1]].admin = true;
+            if (rooms['players'][Object.keys(rooms[roomCode]['players'][1])]) {
+                room['players'][Object.keys(rooms[roomCode]['players'])[1]].admin = true;
+            } else if (rooms['winners'][Object.keys(rooms[roomCode]['winners'][1])]) {
+                room['winners'][Object.keys(rooms[roomCode]['winners'])[1]].admin = true;
+            } else {
+                room['spectators'][Object.keys(rooms[roomCode]['spectators'])[1]].admin = true;
+            }
             io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(room)]);
             delete room['winners'][id];
             console.log(JSON.stringify(rooms));
         } else {
-            io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(rooms[data[0]])]);
+            io.to(roomCode).except(id).emit('leaveMove', [id, JSON.stringify(rooms[roomCode])]);
             delete room['winners'][id];
         }
     }
@@ -109,6 +127,7 @@ io.on('connection', (socket) => {
                     email: socket.email,
                     admin: true,
                     spectators: [],
+                    emoji: '💤',
                 },
             },
             spectators: {},
@@ -144,6 +163,7 @@ io.on('connection', (socket) => {
                             email: socket.email,
                             admin: false,
                             spectators: [],
+                            emoji: '💤',
                         }
                     }
                 } else {
@@ -155,6 +175,7 @@ io.on('connection', (socket) => {
                             email: socket.email,
                             admin: false,
                             spectators: [],
+                            emoji: '💤',
                         }
                     }
                 }
@@ -273,6 +294,20 @@ io.on('connection', (socket) => {
         //data[1]: userId
         socket.emit('view', [rooms[data[0]].question, rooms[data[0]]['winners'][data[1]].solution]);
     });
+
+    socket.on('updateEmojiState', data => {
+        //data[0]: emoji
+        //data[1]: roomCode
+        const room = rooms[data[1]];
+        if (room['players'][socket.id]) {
+            rooms[data[1]]['players'][socket.id].emoji = data[0];
+        } else if (room['winners'][socket.id]) {
+            rooms[data[1]]['winners'][socket.id].emoji = data[0];
+        } else if (room['spectators'][socket.id]) {
+            rooms[data[1]]['spectators'][socket.id].emoji = data[0];
+        }
+        io.to(data[1]).emit('updatedEmoji', [data[0], socket.id, JSON.stringify(rooms[data[1]])]);
+    }); 
 });
 
 
